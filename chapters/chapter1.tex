@@ -4,40 +4,70 @@
 \chapter{Introduction}
 \label{chap:intro}
 
-%% ── 1.1 Background and Literature Survey ─────────────────────
-\section{Background and Literature Survey}
+%% ── 1.1 Background and Context ────────────────────────────
+\section{Background and Context}
 \label{sec:background}
 
-Digital programming assessments have become central to undergraduate computing curricula, but remote and blended delivery models create two persistent challenges: (i) confirming that the registered student is the one actively producing code throughout an assessment, and (ii) understanding whether the observed coding process reflects genuine learning rather than final-answer submission behavior.
-
-Keystroke dynamics has matured from early behavioral biometric studies to large-scale deep learning systems. Foundational work established that typing rhythm can act as an unobtrusive behavioral signature for authentication \citep{monrose2000keystroke}. Later studies demonstrated the scalability of free-text keystroke biometrics across very large populations, including deep embedding approaches such as TypeNet \citep{acien2022typenet}. Contemporary analyses further show that modern typing behavior exhibits structured variation at scale, enabling both identity and behavior modeling \citep{dhakal2018observations}.
-
-Within educational computing, research on learner traces has shown that temporal interaction signals can reveal struggle, self-regulated learning states, and intervention opportunities \citep{arakawa2021situ, dong2021trace}. In parallel, online-exam-focused studies indicate that continuous keystroke authentication can support integrity assurance beyond one-time login verification \citep{senarath2023reevaluating, mattsson2020keystroke}.
-
-However, most systems are designed with a single objective. Authentication systems prioritize identity certainty but offer limited pedagogical interpretation. Learning analytics systems provide insights into progress and struggle yet often lack robust identity continuity. In modern programming courses, both capabilities are required simultaneously.
-
-%% ── 1.2 Research Gap ─────────────────────────────────────────
-\section{Research Gap}
-\label{sec:gap}
-
-The literature reveals four practical gaps relevant to programming education platforms:
+Digital programming assessments have become central to undergraduate computing curricula worldwide. Remote and blended delivery models, accelerated by recent global events, have made programming education increasingly dependent on online platforms for assignments, examinations, and automated grading. However, these digital environments present two persistent and interrelated challenges:
 
 \begin{enumerate}
-  \item \textbf{Separation of concerns:} Keystroke authentication and learning-process analytics are usually implemented as isolated pipelines.
-  \item \textbf{Limited interpretability for instructors:} Authentication outcomes are frequently delivered as thresholded scores without cognitive or behavioral context.
-  \item \textbf{Insufficient continuous monitoring integration:} Many deployments focus on login-time or checkpoint verification rather than session-wide identity confidence.
-  \item \textbf{Low implementation transferability:} Research prototypes do not always provide deployable microservice patterns that integrate with course assessment systems.
+  \item \textbf{Identity assurance:} Confirming that the enrolled student—not an impersonator, proxy, or collaborative actor—actively produces the submitted code throughout an assessment session.
+  \item \textbf{Learning process transparency:} Understanding whether observed coding behavior reflects genuine learning, problem-solving effort, and cognitive engagement, or whether behavior patterns suggest shortcuts (copy-paste, template reuse, external assistance).
 \end{enumerate}
 
-This dissertation addresses these gaps by implementing an integrated module in which keystroke biometric verification and behavior learning analytics share data capture, feature extraction, and reporting pathways.
+Keystroke dynamics—the measurable patterns of typing rhythm, timing, and interaction—has emerged as a mature field of behavioral biometrics. Foundational studies by \citet{monrose2000keystroke} first demonstrated that keystroke patterns can serve as an unobtrusive behavioral signature for authentication. More recent work has extended keystroke analysis to large-scale populations and heterogeneous contexts. For instance, \citet{dhakal2018observations} analyzed typing behavior from 136 million keystrokes, revealing significant structure and variability in human typing patterns. Modern deep learning approaches, particularly the TypeNet model by \citet{acien2022typenet}, have further improved keystroke-based authentication by learning rich temporal embeddings from sequences of typing events.
 
-%% ── 1.3 Research Problem ──────────────────────────────────────
-\section{Research Problem}
+In parallel, educational research has shown that learner interaction traces—including keystroke sequences, IDE logs, compilation attempts, and code edits—provide valuable signals for understanding cognitive processes and identifying struggle moments. Studies such as \citet{arakawa2021situ} and \citet{dong2021trace} exploit student trace logs to infer self-regulated learning patterns, concept confusion points, and intervention opportunities during programming assignments.
+
+Despite this maturity, most systems still operate in silos. Keystroke authentication systems prioritize high separation-of-concerns certainty but offer limited pedagogical interpretation. Learning analytics systems provide detailed process insights yet often lack robust identity continuity assurance. The gap between these two domains represents a missed opportunity: in modern online programming courses, both capabilities are required simultaneously, and integrating them can yield synergistic benefits.
+
+%% ── 1.2 Research Motivation and Gaps ───────────────────────
+\section{Research Motivation and Gaps}
+\label{sec:motivation}
+
+The literature reveals several practical gaps relevant to programming education platforms and online assessment integrity:
+
+\begin{enumerate}
+  \item \textbf{Separation of concerns:} Keystroke authentication and learning-process analytics are usually implemented as isolated pipelines, with no data or feature sharing. This duplication increases system complexity and reduces interpretability.
+  
+  \item \textbf{Limited interpretability for instructors:} Authentication outcomes are frequently delivered as thresholded binary scores (pass/fail, accept/reject) or single risk percentiles, without cognitive or behavioral context. Instructors cannot easily distinguish between identity-related risk (plausible misidentification) and authenticity risk (suspicious process patterns).
+  
+  \item \textbf{Insufficient continuous monitoring integration:} Many deployments focus on login-time or checkpoint verification rather than session-wide identity confidence. This limits early detection of identity drift or anomalies mid-session.
+  
+  \item \textbf{Low implementation transferability:} Research prototypes do not always provide deployable microservice patterns, API contracts, and integration hooks suitable for adoption in production LMS ecosystems.
+  
+  \item \textbf{Lack of pedagogical feedback integration:} Even when learning analytics are computed, the output often remains in a separate dashboard or analytics pipeline, unconnected to instructor workflows or formative feedback pathways.
+\end{enumerate}
+
+This dissertation addresses these gaps by implementing an integrated module that combines keystroke biometric verification and behavior learning analytics, sharing a common event substrate, feature set, and reporting paradigm.
+
+%% ── 1.3 Research Problem Statement ──────────────────────────
+\section{Research Problem Statement}
 \label{sec:problem}
 
-Programming instructors and academic integrity teams require reliable evidence that a coding submission was created by the enrolled student and produced through an authentic learning process. Existing tools provide either static plagiarism signals from final code or isolated biometric identity checks, but not an integrated explanation of \emph{who typed} and \emph{how learning unfolded over time}. As a result, institutions face false confidence, delayed interventions, and reduced trust in remote assessments.
+Programming instructors and academic integrity teams require reliable, actionable evidence to support three interrelated decision-making contexts:
 
-The core problem addressed in this research is: \textit{How can a single module continuously authenticate student identity from keystroke behavior while simultaneously generating interpretable learning-process analytics for programming education?}
+\begin{enumerate}
+  \item \textbf{Integrity review:} Is the coding submission likely authored by the enrolled student? What is the confidence level?
+  \item \textbf{Process authenticity:} Do observed keystroke patterns suggest genuine problem-solving (e.g., structured debugging) or suspicious shortcuts (e.g., continuous paste operations)?
+  \item \textbf{Learning diagnosis:} Where did the student encounter difficulty? What was the troubleshooting approach? Was the final solution the product of engaged learning or quick adoption?
+\end{enumerate}
+
+Existing tools provide either static plagiarism signals from final code (without process evidence) or isolated biometric identity checks (without behavioral context). As a result, institutions face false confidence in integrity assessments, delayed intervention for struggling learners, and reduced trust in remote assessments.
+
+The core research problem is formulated as:
+
+\begin{quote}
+  \textit{How can a unified module continuously authenticate student identity from keystroke biometrics while simultaneously extracting and communicating interpretable learning-process analytics, integrated within a microservice-based assessment platform?}
+\end{quote}
+
+This problem spans three sub-objectives:
+
+\begin{enumerate}
+  \item \textit{Technical integration:} Design a single event capture and processing pipeline that supports both biometric matching and behavioral analytics, avoiding data duplication.
+  \item \textit{Interpretability:} Define explicit, explainable scoring mechanisms that translate raw keystroke features into instructor-facing risk indicators and pedagogical signals.
+  \item \textit{Operationalization:} Build a production-grade microservice artifact with extensible APIs, suitable for integration into existing LMS and assessment workflows.
+\end{enumerate}
 
 %% ── 1.4 Research Objectives ───────────────────────────────────
 \section{Research Objectives}
@@ -46,48 +76,132 @@ The core problem addressed in this research is: \textit{How can a single module 
 The primary objectives of this research are:
 
 \begin{enumerate}
-  \item To identify keystroke-dynamics and learning-analytics requirements for continuous authentication in programming assessments.
-  \item To design and implement a behavior learning analytics module that combines TypeNet-style keystroke embeddings with interpretable session analytics.
-  \item To define a scoring model for authenticity, engagement, active problem solving, and learning depth using event-level coding traces.
-  \item To evaluate the implemented module through scenario-based validation and system-level testing within the GradeLoop service ecosystem.
-  \item To provide deployment-oriented guidance for integrating continuous keystroke authentication into LMS and assessment workflows.
+  \item \textbf{Requirement analysis:} Identify and synthesize keystroke-dynamics and learning-analytics requirements specific to continuous authentication in online programming assessments, informed by literature and practitioner input.
+  
+  \item \textbf{System design:} Design an integrated behavior learning analytics module architecture that combines TypeNet-style keystroke embeddings with rule-based and model-assisted session analysis, operating within a microservice boundary.
+  
+  \item \textbf{Implementation:} Implement the designed module as a FastAPI microservice with three core capabilities:
+    \begin{itemize}
+      \item Continuous keystroke-based identity confidence scoring;
+      \item Process-aware behavior analytics (friction detection, cognitive load estimation, authenticity indicators);
+      \item Interpretable instructor-facing outputs (risk summaries, pedagogical feedback).
+    \end{itemize}
+  
+  \item \textbf{Validation and evaluation:} Evaluate the implemented module through scenario-based integration testing, using representative coding-session traces to validate correctness, interpretability, and operational utility.
+  
+  \item \textbf{Deployment guidance:} Provide comprehensive technical documentation and deployment recommendations for integrating the module into production assessment ecosystems.
 \end{enumerate}
 
 %% ── 1.5 Conceptual Framework ───────────────────────────────────
 \section{Conceptual Framework}
+\label{sec:framework}
 
-The conceptual framework of the study is structured as a five-stage pipeline:
+The conceptual framework of the study organizes the problem into a six-stage pipeline:
 
 \begin{enumerate}
-  \item \textbf{Keystroke Capture:} Timestamped key events are collected from coding sessions.
-  \item \textbf{Feature Construction:} Temporal and behavioral features (HL, IL, PL, RL, digraph timing, pause structure, deletion behavior) are derived.
-  \item \textbf{Continuous Authentication:} Sequence embeddings are compared against enrolled templates for ongoing identity confidence.
-  \item \textbf{Behavior Analytics:} Rule-based and model-assisted analyses extract cognitive and process indicators.
-  \item \textbf{Instructor Reporting:} Risk and pedagogical summaries are delivered through interpretable dashboards and APIs.
+  \item \textbf{Keystroke Event Capture:} Client-side JavaScript instrumentation intercepts button press, hold, and release events during code editing, capturing timestamps (UTC milliseconds), key identity (or category), physical timing (dwell time, inter-key latency), and action context (type, delete, paste, etc.).
+  
+  \item \textbf{Feature Construction:} Captured events are transformed into temporal feature vectors. Primary features include:
+    \begin{itemize}
+      \item \textbf{Dwell time (Hold Latency—HL):} Duration a key is held down (milliseconds).
+      \item \textbf{Inter-key latency (IL):} Time between release of one key and press of next key.
+      \item \textbf{Press latency (PL):} Time between key press and subsequent key release (related to dwell).
+      \item \textbf{Release latency (RL):} Time delay between release of a key and press of next.
+      \item \textbf{Key code traces:} Categorical embeddings of which keys are pressed and in what order.
+    \end{itemize}
+    These features are aggregated into sliding-window sequences of fixed length (e.g., 70 keystrokes per sequence).
+  
+  \item \textbf{Continuous Authentication via Embeddings:} A pre-trained TypeNet LSTM network generates 128-dimensional embeddings from each keystroke sequence. During enrollment, a user's template (mean and standard deviation of embeddings) is stored. During live assessment, incoming sequences are embedded and compared against the enrolled template using Euclidean distance and cosine similarity, yielding a rolling identity confidence score.
+  
+  \item \textbf{Behavior Analytics and Signal Extraction:} In parallel with biometric matching, the same event stream is analyzed for behavioral indicators:
+    \begin{itemize}
+      \item Deletion rate and patterns (suggesting error correction or rewriting).
+      \item Pause structure (long pauses may indicate thinking, external assistance, or distraction).
+      \item Copy-paste frequency (high values suggest non-incremental construction).
+      \item Friction points (windows with high deletion rates or prolonged pauses, suggesting struggle).
+      \item Cognitive load trajectory (estimated from burst typing, pause patterns, and temporal clustering).
+    \end{itemize}
+  
+  \item \textbf{Scoring and Aggregation:} Multiple behavior signals are combined into composite interpretable scores:
+    \begin{itemize}
+      \item \textbf{Authenticity score:} 0--100, reflecting natural human patterns vs. synthetic or external-assistance patterns.
+      \item \textbf{Engagement score:} 0--100, reflecting active motor interaction vs. passivity or automation.
+      \item \textbf{Active problem-solving score:} 0--100, reflecting structured incremental development vs. bulk pasting or copying.
+      \item \textbf{Learning depth score:} 0--100, reflecting evidence of conceptual struggle and resolution vs. quick surface-level solutions.
+    \end{itemize}
+  
+  \item \textbf{Instructor Reporting:} Risk summaries, pedagogical feedback, and recommendations are delivered via REST API and instructor dashboard, supporting triage, human review, and formative intervention pathways.
 \end{enumerate}
 
-%% ── 1.6 Scope of the Study ────────────────────────────────────
-\section{Scope of the Study}
+%% ── 1.6 Scope and Boundaries ──────────────────────────────────
+\section{Scope and Boundaries}
+\label{sec:scope}
 
-Table~\ref{tab:scope-parameters} summarizes the operational scope of the research.
+Table~\ref{tab:scope-boundaries} defines the scope and explicit boundaries of this research.
 
 \begin{table}[H]
   \centering
-  \caption{Scope parameters of the dissertation.}
-  \label{tab:scope-parameters}
+  \caption{Scope and Boundary Specifications.}
+  \label{tab:scope-boundaries}
   \begin{singlespace}
-  \begin{tabular}{@{}p{4.0cm}p{4.2cm}p{6.0cm}@{}}
+  \begin{tabularx}{\textwidth}{@{}p{3.5cm}p{4.5cm}p{5.5cm}@{}}
     \toprule
-    \textbf{Dimension} & \textbf{In Scope} & \textbf{Boundary / Notes} \\
+    \textbf{Dimension} & \textbf{In Scope} & \textbf{Out of Scope / Boundary} \\
     \midrule
-    User group & Undergraduate programming students & Intended for assignment and exam coding contexts \\
-    Behavioral source & Keyboard event streams & Focus on timing and interaction patterns, not semantic code grading \\
-    Authentication mode & Continuous session-level checks & Complements, not replaces, institutional invigilation policy \\
-    Analytics outputs & Authenticity and learning-process indicators & Used for decision support and human review \\
-    Deployment context & GradeLoop microservice architecture & API gateway, Python keystroke service, web dashboard integration \\
+    User audience & Undergraduate programming students in online or blended courses & Graduate-level, vocational, or K-12 contexts \\[6pt]
+    Behavioral source & Keyboard event streams (timing, key identity, action type) & Mouse trajectories, IDE metrics, compile/runtime signals (extensible for future multimodal fusion) \\[6pt]
+    Authentication mode & Continuous session-level rolling risk scores & Real-time biometric spoofing detection; fingerprint-level forensic analysis \\[6pt]
+    Analytics focus & Process indicators and cognitive/struggle patterns & Semantic code understanding or automated grading \\[6pt]
+    Deployment context & GradeLoop microservice architecture (FastAPI, PostgreSQL, Redis) & Standalone desktop tools; embedded browser plugins \\[6pt]
+    Data retention & Configurable session archiving ($\leq$ 90 days default) & Long-term longitudinal cohort studies \\[6pt]
+    Use model & Decision-support tool with human review & Autonomous enforcement or disciplinary automation \\
     \bottomrule
-  \end{tabular}
+  \end{tabularx}
   \end{singlespace}
 \end{table}
 
-\clearpage
+\subsection{Assumptions}
+The research makes the following explicit assumptions:
+
+\begin{itemize}
+  \item Users have access to a standard keyboard (device context is relatively stable during an assessment).
+  \item Sufficient keystroke volume (150+ events per session) is available for feature extraction.
+  \item Student consent and institutional governance mechanisms are in place for data collection and processing.
+  \item Instructors and administrators will use the module's outputs as decision-support signals, not as absolute ground truth.
+\end{itemize}
+
+%% ── 1.7 Contributions and Significance ─────────────────────────
+\section{Contributions and Significance}
+\label{sec:contributions}
+
+The primary contributions of this dissertation are:
+
+\begin{enumerate}
+  \item \textbf{Integrated system design:} A novel architecture that unifies keystroke authentication and behavior learning analytics within a single microservice boundary, eliminating data duplication and improving consistency.
+  
+  \item \textbf{Interpretable scoring framework:} Explicit, rule-based scoring mechanisms that translate low-level keystroke features into high-level instructor-understandable concepts (friction points, cognitive load, activity patterns).
+  
+  \item \textbf{Production-grade implementation:} A fully functional, containerized FastAPI microservice with comprehensive API contracts, database integration, and real-time monitoring capabilities.
+  
+  \item \textbf{Operational evaluation:} Scenario-based validation demonstrating feasibility in representative educational contexts, with specific guidance for institutional deployment.
+  
+  \item \textbf{Extensible architecture:} A design permitting future enhancements (e.g., multimodal fusion, fairness calibration, domain adaptation) without major restructuring.
+\end{enumerate}
+
+The significance of this work lies in bridging a practical gap in educational technology: most institutions struggle to deploy both identity assurance and learning process visibility simultaneously. This dissertation provides a concrete, deployable solution and serves as a proof-of-concept for the benefits of integrating biometric and behavioral analytics in educational assessment platforms.
+
+%% ── 1.8 Dissertation Structure ─────────────────────────────────
+\section{Dissertation Structure}
+\label{sec:structure}
+
+The remainder of this dissertation is organized as follows:
+
+\begin{itemize}
+  \item \textbf{Chapter 2 (Literature Review):} Comprehensive synthesis of keystroke dynamics, behavioral biometrics, learning analytics, and online assessment integrity. Positioning of this work within the broader research landscape.
+  
+  \item \textbf{Chapter 3 (Methodology and Implementation):} Detailed description of the system architecture, feature extraction pipeline, TypeNet-based authentication component, behavioral analysis algorithms, implementation platform choices, and testing strategy.
+  
+  \item \textbf{Chapter 4 (Results, Evaluation, and Discussion):} Presentation of system validation results, scenario-based test outcomes, comparative insights relative to prior work, practical implications, limitations, and recommendations for institutional adoption.
+  
+  \item \textbf{References:} Comprehensive citation list supporting the discourse.
+\end{itemize}

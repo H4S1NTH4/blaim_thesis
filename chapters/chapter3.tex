@@ -1,87 +1,303 @@
 %% ============================================================
-%%  chapters/chapter3.tex  –  Results and Discussion
+%%  chapters/chapter3.tex  –  System Design and Implementation
 %% ============================================================
-\chapter{Results and Discussion}
-\label{chap:results}
+\chapter{System Design and Implementation}
+\label{chap:design-impl}
 
-%% ── 3.1 Results ──────────────────────────────────────────────
-\section{Results}
-\label{sec:results}
+This chapter describes the detailed design and implementation of the integrated behavior learning analytics module. It covers the system architecture, data models, authentication pipeline, behavior analytics algorithms, implementation technology choices, and key design decisions that bridge the keystroke capture layer with the intelligence and reporting layers.
 
-The implemented module produces two synchronized output families for each analyzed session:
+%% ── 3.1 System Architecture ───────────────────────────────────
+\section{System Architecture}
+\label{sec:architecture}
+
+The module is organized as a three-layer microservice architecture designed for deployment within the GradeLoop ecosystem and integration with existing LMS platforms.
+
+\subsection{Layered architecture model}
+
+The system follows a service-oriented architecture with clear separation of concerns:
 
 \begin{enumerate}
-  \item \textbf{Continuous authentication outputs:} similarity trajectory, risk score, and confidence level.
-  \item \textbf{Behavior learning analytics outputs:} friction points, cognitive load trend, authenticity indicators, and pedagogical recommendations.
+  \item \textbf{Capture layer:} Frontend JavaScript instrumentation intercepts keystroke events from code editors, captures timing data, and batches events for transmission to the backend service via HTTPS or WebSocket.
+  
+  \item \textbf{Intelligence layer:} FastAPI microservice receives keystroke events, performs real-time feature extraction, TypeNet embedding generation, continuous authentication verification against enrolled templates, and behavior analytics. Results are cached in Redis for low-latency queries and persisted in PostgreSQL for long-term analysis.
+  
+  \item \textbf{Consumption layer:} REST API endpoints and WebSocket connections expose analysis results to external systems (instructor dashboards, LMS integrations, third-party tools). Results include identity confidence scores, behavioral analytics, friction point detection, and pedagogical recommendations.
 \end{enumerate}
 
-From system-level validation, the following operational outcomes are observed:
+\subsection{Capture layer: Frontend instrumentation}
+
+The capture layer is implemented as a lightweight JavaScript module that instruments code editors. For each keystroke, the following is captured:
 \begin{itemize}
-  \item The event-to-report pipeline remains deterministic for identical input traces, improving reproducibility.
-  \item Behavioral markers such as prolonged pauses and deletion bursts are consistently surfaced in friction-point detection.
-  \item Sessions with excessive paste behavior receive increased synthetic-risk indicators, improving triage visibility for instructors.
+  \item Timestamp (UTC milliseconds).
+  \item Key information (Unicode name, e.g., 'a', 'Enter').
+  \item Key code (numeric).
+  \item Action type ('type', 'delete', 'copy', 'paste').
+  \item Dwell time and flight time (computed from previous keystroke).
+  \item Optional: line/column position and anonymized code state.
 \end{itemize}
 
-Table~\ref{tab:output-dimensions} summarizes key output dimensions and their instructional utility.
+Events are batched (every 200 ms or 50 events) and sent via HTTPS POST to `/api/keystroke/capture` endpoint.
+
+\subsection{Intelligence layer: FastAPI microservice}
+
+Key components:
+
+\begin{enumerate}
+  \item \textbf{Event ingestion:} HTTP endpoints accept keystroke batches and buffer them in Redis with TTL.
+  \item \textbf{Feature extraction:} Keystroke events are transformed into 5-dimensional temporal vectors (HL, IL, PL, RL, K).
+  \item \textbf{Sequence formation:} Fixed-length sequences (70 keystrokes) are constructed with optional overlapping windows.
+  \item \textbf{TypeNet inference:} Pre-trained PyTorch LSTM model generates 128-dimensional embeddings.
+  \item \textbf{Continuous authentication:} Embeddings are compared against enrolled templates using cosine similarity; rolling risk scores are maintained.
+  \item \textbf{Behavior analytics:} Session-level metrics (deletion rate, pause frequency, etc.) are computed. Friction points, authenticity scores, and cognitive load estimates are derived.
+  \item \textbf{LLM integration (optional):} If GEMINI\_API\_KEY is set, anonymized session data is sent to Google Gemini for deeper cognitive analysis and pedagogical feedback.
+  \item \textbf{Persistence:} Results are stored in PostgreSQL and cached in Redis.
+\end{enumerate}
+
+\subsection{Consumption layer}
+
+External systems query the keystroke service via:
+
+\begin{itemize}
+  \item \textbf{REST API:} Synchronous endpoints for enrollment, verification, analysis, and session status retrieval.
+  \item \textbf{WebSocket (optional):} Real-time session monitoring with incremental updates.
+\end{itemize}
+
+%% ── 3.2 Data Models and Event Schema ────────────────────────
+\section{Data Models and Event Schema}
+\label{sec:data-models}
+
+\subsection{Keystroke event}
+
+\begin{verbatim}
+KeystrokeSessionEvent:
+  timestamp:     float      # ms since session start
+  key:           str        # key name ('a', 'Enter', etc.)
+  keyCode:       int        # numeric key code
+  dwellTime:     float      # time key held down (ms)
+  flightTime:    float      # time since previous key (ms)
+  action:        str        # 'type', 'delete', 'paste', 'copy'
+  lineNumber:    int        # (optional) editor line
+  columnNumber:  int        # (optional) editor column
+  codeSnapshot:  str        # (optional) code state
+\end{verbatim}
+
+\subsection{Enrollment template}
+
+\begin{verbatim}
+EnrollmentTemplate:
+  userId:       str               # student identifier
+  phase:        str               # 'baseline', 'transcription', etc.
+  template:     np.ndarray, (128,) # mean embedding
+  std:          np.ndarray, (128,) # std of embeddings
+  sampleCount:  int               # number of sequences
+  enrolledAt:   datetime
+\end{verbatim}
+
+\subsection{Analysis result}
+
+\begin{verbatim}
+BehavioralAnalysisResult:
+  sessionId:            str
+  studentId:            str
+  timestamp:            datetime
+  sessionMetrics:       SessionMetrics
+  authenticityIndicators: AuthenticityIndicators
+  cognitiveAnalysis:    CognitiveAnalysis
+  processScore:         ProcessScore
+  llmInsights:          dict
+  criticalAnomalies:    list[str]
+  pedagogicalFeedback:  dict
+\end{verbatim}
+
+%% ── 3.3 Keystroke Feature Extraction ───────────────────────
+\section{Keystroke Feature Extraction}
+\label{sec:feature-extraction}
+
+\subsection{Temporal features}
+
+Core per-keystroke features are:
+
+\begin{enumerate}
+  \item \textbf{Hold Latency (HL):} Time key is held down.
+  \item \textbf{Inter-key Latency (IL):} Time between key releases (``flight time'').
+  \item \textbf{Press Latency (PL):} Time to press key after previous release.
+  \item \textbf{Release Latency (RL):} Time to release key after press detection.
+  \item \textbf{Key code (K):} Normalized numeric key identifier.
+\end{enumerate}
+
+Feature vector for keystroke $i$:
+\begin{equation}
+\mathbf{f}_i = [\text{HL}_i, \text{IL}_i, \text{PL}_i, \text{RL}_i, \text{K}_i]
+\end{equation}
+
+\subsection{Sequence construction}
+
+Fixed-length sequences of 70 keystrokes:
+\begin{equation}
+S_t = [\mathbf{f}_1, \mathbf{f}_2, \ldots, \mathbf{f}_{70}]^T \in \mathbb{R}^{70 \times 5}
+\end{equation}
+
+Sequences can overlap with stride 35 for continuous re-assessment.
+
+\subsection{Session-level aggregation}
+
+Statistical summaries computed over full session:
+\begin{itemize}
+  \item Percentiles of dwell and flight times (mean, std, median, 25th, 75th).
+  \item Typing speed (CPM).
+  \item Error rate (deletion frequency).
+  \item Burst frequency (IL $< 100$ ms).
+  \item Pause frequency (IL $> 1000$ ms, IL $> 3000$ ms).
+  \item Digraph timing (common key pair delays).
+\end{itemize}
+
+%% ── 3.4 TypeNet Authentication ────────────────────────────────
+\section{TypeNet-Based Authentication Pipeline}
+\label{sec:typenet-auth}
+
+\subsection{Architecture}
+
+TypeNet is a two-layer LSTM with batch normalization and dropout:
+
+\begin{equation}
+\text{LSTM1} \to \text{BN} + \text{Dropout} \to \text{LSTM2} \to \text{BN} + \text{Dropout} \to \text{Linear(128)}
+\end{equation}
+
+Input shape: (batch, 70, 5) $\to$ Output shape: (batch, 128).
+
+\subsection{Enrollment}
+
+Multiple sequences ($n = 8$--12) are collected and embedded:
+
+\begin{enumerate}
+  \item Generate embeddings: $\mathbf{e}_i = \text{TypeNet}(S_i), i=1,\ldots,n$.
+  \item Compute mean: $\boldsymbol{\mu} = \frac{1}{n} \sum_i \mathbf{e}_i$.
+  \item Compute std: $\boldsymbol{\sigma} = \sqrt{\frac{1}{n} \sum_i (\mathbf{e}_i - \boldsymbol{\mu})^2}$ (element-wise).
+  \item Store $(\boldsymbol{\mu}, \boldsymbol{\sigma})$ as enrolled template.
+\end{enumerate}
+
+\subsection{Verification}
+
+For each new sequence:
+
+\begin{enumerate}
+  \item Embed: $\mathbf{e}_{\text{new}} = \text{TypeNet}(S_{\text{new}})$.
+  \item Compute similarity: $\text{sim} = \cos(\mathbf{e}_{\text{new}}, \boldsymbol{\mu})$.
+  \item Compare threshold: If $\text{sim} \geq \tau_{\text{accept}}$ (e.g., 0.75), accept; if $\leq \tau_{\text{reject}}$ (e.g., 0.55), flag anomaly.
+  \item Rolling risk: $\text{risk}_t = \frac{1}{|W|} \sum_{s \in W} \mathbb{1}(\text{sim}_s < \tau_{\text{accept}})$.
+\end{enumerate}
+
+%% ── 3.5 Behavior Analytics ────────────────────────────────────
+\section{Behavior Analytics Pipeline}
+\label{sec:behavior-analytics}
+
+\subsection{Session metrics}
 
 \begin{table}[H]
   \centering
-  \caption{Output dimensions of the integrated module.}
-  \label{tab:output-dimensions}
+  \caption{Core session metrics and their significance.}
+  \label{tab:metrics-sig}
   \begin{singlespace}
-  \begin{tabularx}{\textwidth}{@{}p{4.0cm}p{4.5cm}p{5.0cm}@{}}
+  \begin{tabularx}{\textwidth}{@{}p{3.0cm}p{3.5cm}p{5.5cm}@{}}
     \toprule
-    \textbf{Dimension} & \textbf{Primary signal} & \textbf{Instructor utility} \\
+    \textbf{Metric} & \textbf{Computation} & \textbf{Significance} \\
     \midrule
-    Identity continuity & Embedding similarity and rolling risk & Detect session-level identity drift \\
-    Authenticity profile & Paste count, burst typing, deletion behavior & Prioritize submissions for review \\
-    Cognitive effort & Long pauses, rewrite moments, load timeline & Identify likely struggle intervals \\
-    Learning process quality & Active problem solving and learning depth scores & Support formative feedback and intervention planning \\
+    Typing speed & (Char keystrokes / seconds) $\times$ 60 & Fluency, confidence \\
+    Deletion rate & Backspace + Delete / total & Error correction intensity \\
+    Pause frequency & IL $> 1000$ ms & Thinking, reflection \\
+    Paste frequency & Paste events / session & Copy-paste behavior \\
+    Burst events & IL $< 100$ ms & Rapid typing (confident or automated) \\
+    Rhythm consistency & $1 - \text{CV}(\text{IL})$ & Typing stability (0=variable, 1=consistent) \\
     \bottomrule
   \end{tabularx}
   \end{singlespace}
 \end{table}
 
-%% ── 3.2 Research Findings ────────────────────────────────────
-\section{Research Findings}
-\label{sec:findings}
+\subsection{Friction point detection}
 
-The key findings relative to the research objectives are as follows:
+Windows (50 keystrokes) are flagged if:
+\begin{equation}
+\text{friction}(W) = \max \left( \text{del\_rate}(W), \text{long\_pause\_rate}(W) \right) > \theta
+\end{equation}
 
-\begin{enumerate}
-  \item \textbf{Feasibility of integration:} Continuous keystroke authentication and behavior learning analytics can operate within one microservice boundary using shared event inputs.
-  \item \textbf{Interpretability gain:} Compared with single authentication scores, combined outputs provide richer context for human decision-making.
-  \item \textbf{Pedagogical relevance:} Friction and cognitive-load indicators make assessment telemetry actionable for feedback and remediation.
-  \item \textbf{Operational transferability:} API-first design supports integration with assessment workflows and instructor dashboards.
-\end{enumerate}
+where $\theta = 0.25$--0.35 (configurable). Record: timestamp, duration, severity.
 
-These findings align with prior work showing that keystroke signals are useful for biometric identity \citep{acien2022typenet, senarath2023reevaluating} and that learner trace data is useful for struggle identification \citep{arakawa2021situ, dong2021trace}. The contribution of this dissertation is the practical fusion of both into one deployable module.
+\subsection{Authenticity scoring}
 
-%% ── 3.3 Discussion ───────────────────────────────────────────
-\section{Discussion}
-\label{sec:discussion}
+\begin{equation}
+\text{authenticity} = 0.5 (1 - \text{paste\_ratio}) + 0.3 \cdot \text{burst\_score} + 0.2 \cdot \text{rhythm}
+\end{equation}
 
-The results highlight an important implementation insight: in educational settings, authentication confidence is more useful when accompanied by behavioral evidence. Purely biometric systems can signal mismatch risk but cannot explain whether observed deviations reflect stress, genuine struggle, device changes, or suspicious external assistance. By pairing identity metrics with process analytics, the module supports proportionate and fairer review decisions.
+\subsection{Cognitive and learning indicators}
 
-Compared with large-scale keystroke studies \citep{dhakal2018observations} and deep embedding methods \citep{acien2022typenet}, this work is less focused on benchmark competition and more focused on platform integration, explainability, and classroom applicability. Relative to educational trace-analysis research \citep{arakawa2021situ}, the module extends utility by adding continuous identity confidence, which is critical for high-stakes assessments.
+Inferred from keystroke patterns:
 
-The discussion also surfaces practical constraints. Keystroke-based inference is sensitive to context drift (device changes, keyboard layout, situational stress). Therefore, institutional use should include transparent policies, consent, human-in-the-loop moderation, and threshold calibration by course context.
+\begin{itemize}
+  \item \textbf{Incremental construction:} Presence of planned pauses and small, iterative edits.
+  \item \textbf{Troubleshooting style:} Clustered vs. erratic deletions; repair efficiency.
+  \item \textbf{Engagement score:} 0--100, based on typing activity and absence of idle periods.
+  \item \textbf{Active problem-solving:} 0--100, reflecting incremental development vs. bulk paste.
+  \item \textbf{Learning depth:} 0--100, reflecting struggle followed by resolution vs. quick solutions.
+\end{itemize}
 
-%% ── 3.4 Summary of Each Student's Contribution ───────────────
-\section{Summary of Each Student's Contribution}
-\label{sec:contributions}
+\subsection{LLM-powered analysis (optional)}
 
-\begin{singlespace}
-\begin{tabular}{@{}p{4cm}p{10cm}@{}}
-  \toprule
-  \textbf{Student Name (ID)} & \textbf{Contribution} \\
-  \midrule
-  Student 01 (IT2XXXXX) & Literature synthesis on keystroke biometrics and educational trace analytics; drafted Introduction and parts of Methodology chapters. \\[6pt]
-  Student 02 (IT2XXXXX) & Designed and implemented keystroke feature extraction and continuous authentication integration; prepared architecture and implementation sections. \\[6pt]
-  Student 03 (IT2XXXXX) & Implemented behavioral analytics logic, scoring interpretation, and evaluation scenarios; drafted Results and Discussion chapter. \\[6pt]
-  Student 04 (IT2XXXXX) & Prepared commercialization analysis, ethical considerations, editing harmonization, reference management, and final dissertation formatting. \\
-  \bottomrule
-\end{tabular}
-\end{singlespace}
+If gemini API key is available, prompt LLM with anonymized session data, keystroke summary, and friction points. Parse response for: (1) Genuine problem-solving evidence, (2) Specific struggle points and likely causes, (3) Instructor feedback recommendations.
 
+%% ── 3.6 Technology Stack ──────────────────────────────────────
+\section{Technology Stack}
+\label{sec:tech-stack}
+
+\begin{table}[H]
+  \centering
+  \caption{Implementation technology choices.}
+  \label{tab:stack}
+  \begin{singlespace}
+  \begin{tabularx}{\textwidth}{@{}p{3.0cm}p{3.5cm}p{5.5cm}@{}}
+    \toprule
+    \textbf{Layer} & \textbf{Technology} & \textbf{Rationale} \\
+    \midrule
+    Framework & FastAPI (Python 3.9+) & Async, type hints, automatic OpenAPI docs \\
+    ML/DL & PyTorch & LSTM implementation, pre-trained models, active ecosystem \\
+    Caching & Redis & In-memory speed, TTL, pub/sub for real-time updates \\
+    Database & PostgreSQL & Structured schema, ACID, JSON support \\
+    Deployment & Docker / Docker Compose & Reproducibility, multi-service orchestration \\
+    Frontend & JavaScript (Vanilla/React) & Keystroke capture in code editor \\
+    LLM API & Google Gemini & Powerful free tier, flexible inference \\
+    \bottomrule
+  \end{tabularx}
+  \end{singlespace}
+\end{table}
+
+\subsection{API endpoints}
+
+\begin{verbatim}
+POST   /api/keystroke/capture              # event buffering
+POST   /api/keystroke/enroll               # template creation
+POST   /api/keystroke/verify               # similarity check
+POST   /api/keystroke/analyze              # full analysis
+GET    /api/keystroke/session/status/{...} # session monitoring
+WS     /ws/monitor/{...}                   # real-time updates
+\end{verbatim}
+
+\subsection{Database schema}
+
+\begin{itemize}
+  \item \textbf{user\_templates:} Phase, embeddings, statistics.
+  \item \textbf{auth\_events:} Attempt logs (timestamp, similarity, risk).
+  \item \textbf{sessions:} Metadata (start/end, context).
+  \item \textbf{session\_archives:} Long-term keystroke storage (configurable TTL).
+  \item \textbf{analysis\_results:} Cached analysis outputs.
+\end{itemize}
+
+%% ── 3.7 Testing and Validation ───────────────────────────────
+\section{Testing and Validation Strategy}
+\label{sec:testing}
+
+\begin{itemize}
+  \item \textbf{Unit tests:} Feature extraction, scoring logic, embedding generation.
+  \item \textbf{Integration tests:} End-to-end enrollment, verification, analysis pipelines.
+  \item \textbf{Scenario tests:} Representative coding sessions (copy-paste, struggle, normal).
+  \item \textbf{Robustness:} Edge cases (sparse data, burst analysis, anomaly flags).
+\end{itemize}
 \clearpage
