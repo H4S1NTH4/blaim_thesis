@@ -1,0 +1,79 @@
+%% ============================================================
+%%  chapters/chapter1.tex  –  Introduction
+%% ============================================================
+\chapter{Introduction}
+\label{chap:intro}
+
+%% ── 1.1 Background and Literature Survey ─────────────────────
+\section{Background and Literature Survey}
+\label{sec:background}
+
+%% EDIT – Provide background context and review of related literature.
+\lipsum[2-3]   % placeholder
+
+%% Example citation:  \citep{smith2020}
+
+%% ── 1.2 Research Gap ─────────────────────────────────────────
+\section{Research Gap}
+\label{sec:gap}
+
+%% EDIT – Identify what is missing in existing literature.
+\lipsum[4]
+
+%% ── 1.3 Research Problem ──────────────────────────────────────
+\section{Research Problem}
+\label{sec:problem}
+
+%% EDIT – Clearly state the problem this research addresses.
+\lipsum[5]
+
+%% ── 1.4 Research Objectives ───────────────────────────────────
+\section{Research Objectives}
+\label{sec:objectives}
+
+The primary objectives of this research are:
+
+\begin{enumerate}
+  \item To investigate \ldots                         %% EDIT
+  \item To design and implement \ldots
+  \item To evaluate \ldots
+  \item To propose \ldots
+\end{enumerate}
+
+%% ── 1.5 Example Figure ────────────────────────────────────────
+\section{Example Figure}
+
+Figure~\ref{fig:sample} illustrates the conceptual framework of this study.
+
+\begin{figure}[H]
+  \centering
+  %% Replace 'sample-image' with your actual filename inside /figures/
+  \includegraphics[width=0.7\linewidth]{sample-image}
+  \caption{Conceptual framework of the study.}
+  \label{fig:sample}
+\end{figure}
+
+%% ── 1.6 Example Table ─────────────────────────────────────────
+\section{Example Table}
+
+Table~\ref{tab:sample} summarises the scope parameters.
+
+% AFTER – caption above the table
+\begin{table}[H]
+  \centering
+  \caption{Scope parameters of the study.}   % ← move to here
+  \label{tab:sample}
+  \begin{singlespace}
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \textbf{Parameter} & \textbf{Value} & \textbf{Notes} \\
+    \midrule
+    Dataset size       & 1,000 records  & Collected via survey \\
+    Study period       & 2024–2025      & Academic year \\
+    Target population  & Undergraduates & SLIIT students \\
+    \bottomrule
+  \end{tabular}
+  \end{singlespace}
+\end{table}
+
+\clearpage

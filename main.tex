@@ -1,0 +1,61 @@
+%% ============================================================
+%%  SLIIT Undergraduate Dissertation Template
+%%  Compiler : XeLaTeX  (required for Times New Roman via fontspec)
+%%  Overleaf : Menu → Compiler → XeLaTeX
+%% ============================================================
+\documentclass[12pt, a4paper, oneside]{report}
+
+%% ---- Custom style package ----
+\usepackage{custom}
+
+%% ============================================================
+%%  BEGIN DOCUMENT
+%% ============================================================
+\begin{document}
+
+% ---- FRONT MATTER (Roman page numbers) -----
+\pagenumbering{gobble}          % Title page: no number
+\include{frontmatter/titlepage}
+
+\pagenumbering{roman}           % Preliminary pages: i, ii, iii …
+\setcounter{page}{1}
+
+\include{frontmatter/declaration}
+\include{frontmatter/abstract}
+\include{frontmatter/acknowledgement}
+
+% ---- Auto-generated lists ----
+{
+  \singlespacing                 % Single spacing for ToC / LoF / LoT
+  \tableofcontents
+  \clearpage
+  \listoffigures
+  \clearpage
+  \listoftables
+  \clearpage
+  \include{frontmatter/abbreviations}
+}
+
+% ---- MAIN MATTER (Arabic page numbers, bottom-right) --------
+\mainmatter                     % resets counter to 1, switches style
+
+\include{chapters/chapter1}
+\include{chapters/chapter2}
+\include{chapters/chapter3}
+\include{chapters/chapter4}
+
+% ---- REFERENCES ----
+\clearpage
+\phantomsection
+\addcontentsline{toc}{chapter}{Reference List}
+\bibliographystyle{apalike}
+\bibliography{references}
+
+% ---- GLOSSARY (optional – comment out if not needed) ----
+% \include{frontmatter/glossary}
+
+% ---- APPENDICES ----
+\appendix
+\include{appendices/appendixA}
+
+\end{document}

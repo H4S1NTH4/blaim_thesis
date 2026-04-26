@@ -1,0 +1,21 @@
+%% ============================================================
+%%  frontmatter/abbreviations.tex
+%%  Uses the 'acronym' package (loaded in custom.sty)
+%%  Add entries as: \acro{LABEL}{Full Form}
+%% ============================================================
+\chapter*{List of Abbreviations}
+\addcontentsline{toc}{chapter}{List of Abbreviations}
+\thispagestyle{plain}
+
+\begin{singlespace}
+\begin{acronym}[LONGEST]        %% replace LONGEST with your longest abbreviation for alignment
+  \acro{AI}   {Artificial Intelligence}
+  \acro{API}  {Application Programming Interface}
+  \acro{HTML} {HyperText Markup Language}
+  \acro{IEEE} {Institute of Electrical and Electronics Engineers}
+  \acro{ML}   {Machine Learning}
+  \acro{SLIIT}{Sri Lanka Institute of Information Technology}
+  %% EDIT – add or remove abbreviations alphabetically
+\end{acronym}
+\end{singlespace}
+\clearpage
