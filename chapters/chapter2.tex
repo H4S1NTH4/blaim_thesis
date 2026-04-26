@@ -8,45 +8,136 @@
 \section{Research Methodology}
 \label{sec:methodology}
 
-%% EDIT – Describe your overall research approach (qualitative / quantitative / mixed).
-\lipsum[6]
+This study adopts a \textbf{design science research} orientation with a quantitative event-analytics implementation layer. The methodological flow consists of problem identification, artifact design, iterative implementation, and scenario-based evaluation. The primary artifact is a deployable behavior learning analytics module embedded in the GradeLoop platform.
+
+The methodology combines:
+\begin{itemize}
+	\item \textbf{Literature-driven design inputs} from keystroke biometrics and computing-education analytics \citep{acien2022typenet, senarath2023reevaluating, arakawa2021situ};
+	\item \textbf{Implementation-driven validation} using system traces, API-level tests, and functional acceptance criteria;
+	\item \textbf{Interpretability-focused output design} for instructors and academic integrity workflows.
+\end{itemize}
 
 \subsection{Research design}
 \label{subsec:design}
 
-%% EDIT
-\lipsum[7]
+The research design is structured in five phases:
+
+\begin{enumerate}
+	\item \textbf{Requirement Engineering:} Define educational and security requirements for continuous identity assurance and learner-process visibility.
+	\item \textbf{Data Model Definition:} Formalize keystroke event schema with timestamps, dwell time, flight time, key categories, and action metadata.
+	\item \textbf{Authentication Pipeline Construction:} Build a TypeNet-style embedding workflow for enrollment and continuous verification.
+	\item \textbf{Behavior Analytics Construction:} Implement metrics for friction points, pause patterns, deletion dynamics, cognitive load trends, and authenticity indicators.
+	\item \textbf{System Integration and Evaluation:} Expose functionality through FastAPI endpoints and assess behavior under representative coding-session scenarios.
+\end{enumerate}
+
+This design treats authentication and analytics as coupled components sharing one event substrate, reducing data duplication and improving interpretability consistency.
 
 \subsection{Data collection}
 \label{subsec:data}
 
-%% EDIT
-\lipsum[8]
+Data collection is event-based and privacy-aware. The system captures interaction telemetry from coding sessions, including key timing and action annotations, while minimizing retention of sensitive textual content. Each event contains timestamp, key identity (or category), dwell time, flight time, and action type (e.g., type, delete, paste).
+
+Enrollment data is collected in phased tasks to capture stable and context-varying typing behavior:
+\begin{itemize}
+	\item \textbf{Baseline phase:} low-stress credential-style typing,
+	\item \textbf{Transcription phase:} controlled code copying to observe pure motor rhythm,
+	\item \textbf{Optional stress/cognitive phases:} timed and logic-heavy tasks to capture behavioral shifts.
+\end{itemize}
+
+These phases support robust template formation and mitigate overfitting to a single typing context. For continuous authentication, incoming sessions are segmented into fixed-length sequences for rolling verification and risk monitoring.
 
 %% ── 2.2 Commercialization Aspects ────────────────────────────
 \section{Commercialization Aspects of the Product}
 \label{sec:commercial}
 
-%% EDIT – Describe the commercial viability, target market, revenue model, etc.
-\lipsum[9]
+The proposed module is commercially viable as a \textbf{trust and analytics extension} for digital assessment platforms.
+
+\textbf{Target market.} Universities, coding bootcamps, online examination providers, and LMS vendors that require both integrity controls and actionable learning insights.
+
+\textbf{Value proposition.}
+\begin{itemize}
+	\item Continuous identity confidence rather than one-time login checks,
+	\item Explainable risk signals (paste anomalies, unrealistic burst patterns, abrupt rhythm shifts),
+	\item Pedagogical outputs (struggle zones, troubleshooting style, engagement profiles).
+\end{itemize}
+
+\textbf{Deployment model.} The module can be offered as a containerized microservice with REST APIs, allowing SaaS and on-premise deployment.
+
+\textbf{Revenue options.} Institutional licensing per active learner cohort, usage-based API billing, and analytics-tier subscriptions for instructor dashboards.
+
+\textbf{Risk and compliance considerations.} Adoption requires transparent data governance, student consent mechanisms, configurable retention policies, and clear human-in-the-loop review for high-risk flags.
 
 %% ── 2.3 Testing and Implementation ───────────────────────────
 \section{Testing and Implementation}
 \label{sec:testing}
 
-%% EDIT – Explain the tools, technologies, test strategies, and deployment approach.
-\lipsum[10]
+Implementation follows a service-oriented architecture with Python/FastAPI for keystroke intelligence, TypeNet-style deep embeddings for biometric matching, and web dashboard integration for instructor-facing analytics \citep{gradeloop2026docs}. Key implementation artifacts include event ingestion, feature extraction, template enrollment, sequence verification, and report generation.
+
+The testing strategy includes:
+\begin{itemize}
+	\item \textbf{Unit-level checks} for feature extraction and scoring computations,
+	\item \textbf{API contract tests} for enrollment, verification, and behavioral analysis endpoints,
+	\item \textbf{Scenario-based integration tests} using representative session traces to evaluate end-to-end outputs,
+	\item \textbf{Robustness checks} for sparse data, abnormal typing bursts, and high paste incidence.
+\end{itemize}
 
 \subsection{System architecture}
 \label{subsec:architecture}
 
-%% EDIT
-\lipsum[11]
+The architecture consists of three interacting layers:
+
+\begin{enumerate}
+	\item \textbf{Capture layer:} Frontend instrumentation records keystroke events during coding.
+	\item \textbf{Intelligence layer:} Keystroke-service microservice computes authentication and behavior analytics.
+	\item \textbf{Consumption layer:} API gateway and instructor dashboards consume risk and pedagogical outputs.
+\end{enumerate}
+
+For sequence modeling, each keystroke vector is represented as:
+
+\begin{equation}
+\mathbf{x}_t = [HL_t, IL_t, PL_t, RL_t, K_t]
+\end{equation}
+
+where $HL$ is hold latency, $IL$ is inter-key latency, $PL$ is press latency, $RL$ is release latency, and $K$ is normalized key code.
+
+Continuous verification uses cosine similarity between current embedding $\mathbf{e}_t$ and enrolled template $\mathbf{u}$:
+
+\begin{equation}
+\mathrm{sim}(\mathbf{e}_t,\mathbf{u}) = \frac{\mathbf{e}_t \cdot \mathbf{u}}{\|\mathbf{e}_t\|\,\|\mathbf{u}\|}
+\end{equation}
+
+The session-level risk can be expressed as:
+
+\begin{equation}
+\mathrm{risk}_t = 1 - \mathrm{sim}(\mathbf{e}_t,\mathbf{u})
+\end{equation}
+
+Behavior scores are computed from interpretable rule sets. For example, the overall process quality score is the arithmetic mean of active problem solving, learning depth, authenticity, and engagement components.
 
 \subsection{Test cases and results}
 \label{subsec:testcases}
 
-%% EDIT
-\lipsum[12]
+Table~\ref{tab:test-cases} summarizes key system-level test cases and expected behavioral outcomes used for validation.
+
+\begin{table}[H]
+	\centering
+	\caption{Representative test cases for integrated validation.}
+	\label{tab:test-cases}
+	\begin{singlespace}
+	\begin{tabularx}{\textwidth}{@{}p{3.2cm}p{5.3cm}p{5.7cm}@{}}
+		\toprule
+		\textbf{Test category} & \textbf{Input scenario} & \textbf{Expected outcome} \\
+		\midrule
+		Enrollment quality & Multiple baseline/transcription sequences from same student & Stable template creation with sufficient sample count and low enrollment error \\
+		Continuous verification & Rolling windows from authentic session & Similarity remains above configured threshold in most windows; low aggregate risk \\
+		Copy-paste anomaly & Session with repeated paste actions and low edit activity & Increased synthetic-signature indicators and review-worthy anomaly flags \\
+		Struggle detection & Session with long pauses and concentrated deletions & Friction points and elevated cognitive-load windows identified \\
+		Sparse data handling & Very short session with limited events & Graceful fallback with low-confidence output and explicit data sufficiency warning \\
+		\bottomrule
+	\end{tabularx}
+	\end{singlespace}
+\end{table}
+
+The integrated tests confirm that the module can simultaneously output identity confidence and learning-process descriptors within a single analysis lifecycle, supporting both integrity monitoring and instructional decision support.
 
 \clearpage

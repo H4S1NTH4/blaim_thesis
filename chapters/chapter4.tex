@@ -8,21 +8,38 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-%% EDIT – Summarise what was achieved and how objectives were met.
-\lipsum[16]
+This dissertation addressed the challenge of combining identity assurance and learning-process visibility in online programming assessments. The developed behavior learning analytics module integrates continuous keystroke authentication with interpretable behavior analytics in a single service architecture. The implementation demonstrates that one event stream can support both biometric confidence scoring and pedagogically meaningful process indicators.
+
+The research objectives were achieved by: (i) identifying domain requirements from keystroke and learning-analytics literature, (ii) implementing an integrated module with TypeNet-style sequence processing and rule-based behavior interpretation, (iii) defining transparent process scores for authenticity, engagement, learning depth, and active problem solving, and (iv) validating system behavior through scenario-driven tests.
+
+The main contribution is practical and architectural: a deployable, extensible framework for higher education systems that moves beyond final-code inspection and supports evidence-informed review of coding-session authenticity and learner behavior.
 
 %% ── 4.2 Recommendations ──────────────────────────────────────
 \section{Recommendations}
 \label{sec:recommendations}
 
-%% EDIT – Practical recommendations arising from the research.
-\lipsum[17]
+Based on implementation and validation outcomes, the following recommendations are proposed for institutional adoption:
+
+\begin{enumerate}
+	\item \textbf{Use human-in-the-loop governance.} Treat high-risk analytics outputs as review triggers, not automatic disciplinary decisions.
+	\item \textbf{Calibrate thresholds per context.} Configure similarity and anomaly thresholds differently for quizzes, labs, and high-stakes examinations.
+	\item \textbf{Invest in robust enrollment.} Multi-phase enrollment improves resilience to stress and context shifts during real assessments.
+	\item \textbf{Prioritize transparency.} Clearly communicate what is collected, how scores are computed, and how decisions are reviewed.
+	\item \textbf{Integrate with formative support.} Route struggle indicators to instructional interventions, not only integrity workflows.
+\end{enumerate}
 
 %% ── 4.3 Future Work ──────────────────────────────────────────
 \section{Future Work}
 \label{sec:future}
 
-%% EDIT – Describe extensions or improvements for future researchers.
-\lipsum[18]
+Several research and engineering extensions can increase robustness and educational value:
+
+\begin{itemize}
+	\item \textbf{Longitudinal personalization:} adaptive per-student baselines that evolve across semesters.
+	\item \textbf{Multimodal fusion:} combine keystroke dynamics with mouse trajectories, IDE interaction signals, and compile/run traces.
+	\item \textbf{Fairness and bias analysis:} evaluate threshold behavior across language proficiency, keyboard familiarity, accessibility needs, and device heterogeneity.
+	\item \textbf{Model adaptation:} investigate transformer or contrastive sequence encoders for improved cross-context stability.
+	\item \textbf{Instructor-facing intervention loops:} close the loop by linking detected struggle patterns to targeted feedback pathways and measuring learning impact.
+\end{itemize}
 
 \clearpage

@@ -8,24 +8,36 @@
 \section{Background and Literature Survey}
 \label{sec:background}
 
-%% EDIT – Provide background context and review of related literature.
-\lipsum[2-3]   % placeholder
+Digital programming assessments have become central to undergraduate computing curricula, but remote and blended delivery models create two persistent challenges: (i) confirming that the registered student is the one actively producing code throughout an assessment, and (ii) understanding whether the observed coding process reflects genuine learning rather than final-answer submission behavior.
 
-%% Example citation:  \citep{smith2020}
+Keystroke dynamics has matured from early behavioral biometric studies to large-scale deep learning systems. Foundational work established that typing rhythm can act as an unobtrusive behavioral signature for authentication \citep{monrose2000keystroke}. Later studies demonstrated the scalability of free-text keystroke biometrics across very large populations, including deep embedding approaches such as TypeNet \citep{acien2022typenet}. Contemporary analyses further show that modern typing behavior exhibits structured variation at scale, enabling both identity and behavior modeling \citep{dhakal2018observations}.
+
+Within educational computing, research on learner traces has shown that temporal interaction signals can reveal struggle, self-regulated learning states, and intervention opportunities \citep{arakawa2021situ, dong2021trace}. In parallel, online-exam-focused studies indicate that continuous keystroke authentication can support integrity assurance beyond one-time login verification \citep{senarath2023reevaluating, mattsson2020keystroke}.
+
+However, most systems are designed with a single objective. Authentication systems prioritize identity certainty but offer limited pedagogical interpretation. Learning analytics systems provide insights into progress and struggle yet often lack robust identity continuity. In modern programming courses, both capabilities are required simultaneously.
 
 %% ── 1.2 Research Gap ─────────────────────────────────────────
 \section{Research Gap}
 \label{sec:gap}
 
-%% EDIT – Identify what is missing in existing literature.
-\lipsum[4]
+The literature reveals four practical gaps relevant to programming education platforms:
+
+\begin{enumerate}
+  \item \textbf{Separation of concerns:} Keystroke authentication and learning-process analytics are usually implemented as isolated pipelines.
+  \item \textbf{Limited interpretability for instructors:} Authentication outcomes are frequently delivered as thresholded scores without cognitive or behavioral context.
+  \item \textbf{Insufficient continuous monitoring integration:} Many deployments focus on login-time or checkpoint verification rather than session-wide identity confidence.
+  \item \textbf{Low implementation transferability:} Research prototypes do not always provide deployable microservice patterns that integrate with course assessment systems.
+\end{enumerate}
+
+This dissertation addresses these gaps by implementing an integrated module in which keystroke biometric verification and behavior learning analytics share data capture, feature extraction, and reporting pathways.
 
 %% ── 1.3 Research Problem ──────────────────────────────────────
 \section{Research Problem}
 \label{sec:problem}
 
-%% EDIT – Clearly state the problem this research addresses.
-\lipsum[5]
+Programming instructors and academic integrity teams require reliable evidence that a coding submission was created by the enrolled student and produced through an authentic learning process. Existing tools provide either static plagiarism signals from final code or isolated biometric identity checks, but not an integrated explanation of \emph{who typed} and \emph{how learning unfolded over time}. As a result, institutions face false confidence, delayed interventions, and reduced trust in remote assessments.
+
+The core problem addressed in this research is: \textit{How can a single module continuously authenticate student identity from keystroke behavior while simultaneously generating interpretable learning-process analytics for programming education?}
 
 %% ── 1.4 Research Objectives ───────────────────────────────────
 \section{Research Objectives}
@@ -34,43 +46,45 @@
 The primary objectives of this research are:
 
 \begin{enumerate}
-  \item To investigate \ldots                         %% EDIT
-  \item To design and implement \ldots
-  \item To evaluate \ldots
-  \item To propose \ldots
+  \item To identify keystroke-dynamics and learning-analytics requirements for continuous authentication in programming assessments.
+  \item To design and implement a behavior learning analytics module that combines TypeNet-style keystroke embeddings with interpretable session analytics.
+  \item To define a scoring model for authenticity, engagement, active problem solving, and learning depth using event-level coding traces.
+  \item To evaluate the implemented module through scenario-based validation and system-level testing within the GradeLoop service ecosystem.
+  \item To provide deployment-oriented guidance for integrating continuous keystroke authentication into LMS and assessment workflows.
 \end{enumerate}
 
-%% ── 1.5 Example Figure ────────────────────────────────────────
-\section{Example Figure}
+%% ── 1.5 Conceptual Framework ───────────────────────────────────
+\section{Conceptual Framework}
 
-Figure~\ref{fig:sample} illustrates the conceptual framework of this study.
+The conceptual framework of the study is structured as a five-stage pipeline:
 
-\begin{figure}[H]
-  \centering
-  %% Replace 'sample-image' with your actual filename inside /figures/
-  \includegraphics[width=0.7\linewidth]{sample-image}
-  \caption{Conceptual framework of the study.}
-  \label{fig:sample}
-\end{figure}
+\begin{enumerate}
+  \item \textbf{Keystroke Capture:} Timestamped key events are collected from coding sessions.
+  \item \textbf{Feature Construction:} Temporal and behavioral features (HL, IL, PL, RL, digraph timing, pause structure, deletion behavior) are derived.
+  \item \textbf{Continuous Authentication:} Sequence embeddings are compared against enrolled templates for ongoing identity confidence.
+  \item \textbf{Behavior Analytics:} Rule-based and model-assisted analyses extract cognitive and process indicators.
+  \item \textbf{Instructor Reporting:} Risk and pedagogical summaries are delivered through interpretable dashboards and APIs.
+\end{enumerate}
 
-%% ── 1.6 Example Table ─────────────────────────────────────────
-\section{Example Table}
+%% ── 1.6 Scope of the Study ────────────────────────────────────
+\section{Scope of the Study}
 
-Table~\ref{tab:sample} summarises the scope parameters.
+Table~\ref{tab:scope-parameters} summarizes the operational scope of the research.
 
-% AFTER – caption above the table
 \begin{table}[H]
   \centering
-  \caption{Scope parameters of the study.}   % ← move to here
-  \label{tab:sample}
+  \caption{Scope parameters of the dissertation.}
+  \label{tab:scope-parameters}
   \begin{singlespace}
-  \begin{tabular}{@{}lll@{}}
+  \begin{tabular}{@{}p{4.0cm}p{4.2cm}p{6.0cm}@{}}
     \toprule
-    \textbf{Parameter} & \textbf{Value} & \textbf{Notes} \\
+    \textbf{Dimension} & \textbf{In Scope} & \textbf{Boundary / Notes} \\
     \midrule
-    Dataset size       & 1,000 records  & Collected via survey \\
-    Study period       & 2024–2025      & Academic year \\
-    Target population  & Undergraduates & SLIIT students \\
+    User group & Undergraduate programming students & Intended for assignment and exam coding contexts \\
+    Behavioral source & Keyboard event streams & Focus on timing and interaction patterns, not semantic code grading \\
+    Authentication mode & Continuous session-level checks & Complements, not replaces, institutional invigilation policy \\
+    Analytics outputs & Authenticity and learning-process indicators & Used for decision support and human review \\
+    Deployment context & GradeLoop microservice architecture & API gateway, Python keystroke service, web dashboard integration \\
     \bottomrule
   \end{tabular}
   \end{singlespace}

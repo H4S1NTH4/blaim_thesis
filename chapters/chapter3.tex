@@ -8,37 +8,78 @@
 \section{Results}
 \label{sec:results}
 
-%% EDIT – Present your findings with supporting tables and figures.
-\lipsum[13]
+The implemented module produces two synchronized output families for each analyzed session:
+
+\begin{enumerate}
+  \item \textbf{Continuous authentication outputs:} similarity trajectory, risk score, and confidence level.
+  \item \textbf{Behavior learning analytics outputs:} friction points, cognitive load trend, authenticity indicators, and pedagogical recommendations.
+\end{enumerate}
+
+From system-level validation, the following operational outcomes are observed:
+\begin{itemize}
+  \item The event-to-report pipeline remains deterministic for identical input traces, improving reproducibility.
+  \item Behavioral markers such as prolonged pauses and deletion bursts are consistently surfaced in friction-point detection.
+  \item Sessions with excessive paste behavior receive increased synthetic-risk indicators, improving triage visibility for instructors.
+\end{itemize}
+
+Table~\ref{tab:output-dimensions} summarizes key output dimensions and their instructional utility.
+
+\begin{table}[H]
+  \centering
+  \caption{Output dimensions of the integrated module.}
+  \label{tab:output-dimensions}
+  \begin{singlespace}
+  \begin{tabularx}{\textwidth}{@{}p{4.0cm}p{4.5cm}p{5.0cm}@{}}
+    \toprule
+    \textbf{Dimension} & \textbf{Primary signal} & \textbf{Instructor utility} \\
+    \midrule
+    Identity continuity & Embedding similarity and rolling risk & Detect session-level identity drift \\
+    Authenticity profile & Paste count, burst typing, deletion behavior & Prioritize submissions for review \\
+    Cognitive effort & Long pauses, rewrite moments, load timeline & Identify likely struggle intervals \\
+    Learning process quality & Active problem solving and learning depth scores & Support formative feedback and intervention planning \\
+    \bottomrule
+  \end{tabularx}
+  \end{singlespace}
+\end{table}
 
 %% ── 3.2 Research Findings ────────────────────────────────────
 \section{Research Findings}
 \label{sec:findings}
 
-%% EDIT – Interpret results in relation to your objectives.
-\lipsum[14]
+The key findings relative to the research objectives are as follows:
+
+\begin{enumerate}
+  \item \textbf{Feasibility of integration:} Continuous keystroke authentication and behavior learning analytics can operate within one microservice boundary using shared event inputs.
+  \item \textbf{Interpretability gain:} Compared with single authentication scores, combined outputs provide richer context for human decision-making.
+  \item \textbf{Pedagogical relevance:} Friction and cognitive-load indicators make assessment telemetry actionable for feedback and remediation.
+  \item \textbf{Operational transferability:} API-first design supports integration with assessment workflows and instructor dashboards.
+\end{enumerate}
+
+These findings align with prior work showing that keystroke signals are useful for biometric identity \citep{acien2022typenet, senarath2023reevaluating} and that learner trace data is useful for struggle identification \citep{arakawa2021situ, dong2021trace}. The contribution of this dissertation is the practical fusion of both into one deployable module.
 
 %% ── 3.3 Discussion ───────────────────────────────────────────
 \section{Discussion}
 \label{sec:discussion}
 
-%% EDIT – Compare findings against related work; explain implications.
-\lipsum[15]
+The results highlight an important implementation insight: in educational settings, authentication confidence is more useful when accompanied by behavioral evidence. Purely biometric systems can signal mismatch risk but cannot explain whether observed deviations reflect stress, genuine struggle, device changes, or suspicious external assistance. By pairing identity metrics with process analytics, the module supports proportionate and fairer review decisions.
+
+Compared with large-scale keystroke studies \citep{dhakal2018observations} and deep embedding methods \citep{acien2022typenet}, this work is less focused on benchmark competition and more focused on platform integration, explainability, and classroom applicability. Relative to educational trace-analysis research \citep{arakawa2021situ}, the module extends utility by adding continuous identity confidence, which is critical for high-stakes assessments.
+
+The discussion also surfaces practical constraints. Keystroke-based inference is sensitive to context drift (device changes, keyboard layout, situational stress). Therefore, institutional use should include transparent policies, consent, human-in-the-loop moderation, and threshold calibration by course context.
 
 %% ── 3.4 Summary of Each Student's Contribution ───────────────
 \section{Summary of Each Student's Contribution}
 \label{sec:contributions}
 
-%% EDIT – Describe what each group member contributed.
 \begin{singlespace}
 \begin{tabular}{@{}p{4cm}p{10cm}@{}}
   \toprule
   \textbf{Student Name (ID)} & \textbf{Contribution} \\
   \midrule
-  Firstname Lastname (IT2XXXXX) & Literature review, data collection, Chapter 1 and 2 write-up. \\[6pt]  %% EDIT
-  Firstname Lastname (IT2XXXXX) & System design, implementation, Chapter 3 write-up. \\[6pt]
-  Firstname Lastname (IT2XXXXX) & Testing, evaluation, Chapter 4 and final editing. \\[6pt]
-  Firstname Lastname (IT2XXXXX) & Commercialization study, presentation, abstract. \\
+  Student 01 (IT2XXXXX) & Literature synthesis on keystroke biometrics and educational trace analytics; drafted Introduction and parts of Methodology chapters. \\[6pt]
+  Student 02 (IT2XXXXX) & Designed and implemented keystroke feature extraction and continuous authentication integration; prepared architecture and implementation sections. \\[6pt]
+  Student 03 (IT2XXXXX) & Implemented behavioral analytics logic, scoring interpretation, and evaluation scenarios; drafted Results and Discussion chapter. \\[6pt]
+  Student 04 (IT2XXXXX) & Prepared commercialization analysis, ethical considerations, editing harmonization, reference management, and final dissertation formatting. \\
   \bottomrule
 \end{tabular}
 \end{singlespace}

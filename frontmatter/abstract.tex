@@ -8,7 +8,7 @@
 
 %% Abstract title: Title Case, 12pt Bold
 {\fontsize{12}{15}\bfseries\selectfont
-  Your Dissertation Title in Title Case\par}       %% EDIT
+  Design and Implementation of a Keystroke-Based Behavior Learning Analytics Module for Continuous Student Authentication\par}
 
 \vspace{10pt}
 
@@ -16,12 +16,17 @@
 \begin{singlespace}
 \fontsize{11}{14}\selectfont
 
-%% EDIT – Replace with your 300-word abstract
-\lipsum[1]   % placeholder – delete this line and write your abstract
+Online programming assessments demand two capabilities that are often developed separately: robust learner authentication and actionable learning analytics. This dissertation presents the design and implementation of a unified Behavior Learning Analytics Module that combines continuous keystroke authentication with process-aware behavior analytics for programming education. The solution is implemented within the GradeLoop microservice ecosystem and deployed as a XeLaTeX-documented engineering research artifact.
+
+The proposed module captures timestamped keystroke events and transforms them into temporal features (hold latency, inter-key latency, press latency, release latency, and key code traces). A TypeNet-inspired deep learning pipeline is used for enrollment, verification, and continuous identity confidence scoring. In parallel, a behavioral analysis engine computes session-level indicators such as deletion rate, pause structure, friction points, pivotal rewrite moments, and cognitive load timelines. These indicators are aggregated into interpretable scores for authenticity, engagement, active problem solving, and learning depth.
+
+Methodologically, the study follows a design science and applied software engineering approach: literature-informed requirement derivation, architecture design, iterative implementation, and scenario-based validation using representative coding-session traces. Results show that combining biometric rhythm signals with behavioral process metrics improves instructor-facing interpretability compared with single-score authentication outputs. The module not only flags suspicious interaction patterns (for example, excessive paste operations and implausible typing bursts) but also highlights learning-relevant struggle patterns for pedagogical intervention.
+
+The main contribution is an integrated framework that operationalizes keystroke biometrics and educational behavior analytics in one service boundary, with explicit scoring logic and extensible APIs suitable for LMS integration. Limitations include dependence on sufficient keystroke volume and device-context variability. Future work includes multimodal fusion (mouse, IDE telemetry), adaptive thresholds, longitudinal modeling, and fairness calibration across diverse learner cohorts.
 
 \bigskip
 
-\noindent\textbf{Keywords:} keyword one, keyword two, keyword three, keyword four, keyword five   %% EDIT – 3 to 5 keywords
+\noindent\textbf{Keywords:} keystroke dynamics, continuous authentication, learning analytics, behavioral biometrics, programming education
 
 \end{singlespace}
 \clearpage

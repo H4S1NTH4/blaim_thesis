@@ -1,10 +1,58 @@
 %% ============================================================
 %%  appendices/appendixA.tex
 %% ============================================================
-\chapter{Sample Questionnaire}        %% EDIT – change appendix title
+\chapter{Keystroke Event Schema and Scoring Summary}
 \label{app:questionnaire}
 
-%% EDIT – Insert your appendix content here.
-\lipsum[19-20]   % placeholder – delete and replace
+\section*{Appendix A: Keystroke Event Schema and Scoring Summary}
+
+This appendix provides the operational event fields and simplified scoring logic used by the behavior learning analytics module.
+
+\section*{A.1 Event Schema (Core Fields)}
+
+\begin{table}[H]
+	\centering
+	\caption{Core keystroke event fields used by the analytics pipeline.}
+	\begin{singlespace}
+	\begin{tabular}{@{}p{3.2cm}p{2.2cm}p{8.2cm}@{}}
+		\toprule
+		\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+		\midrule
+		timestamp & float & Event time in milliseconds from session start \\
+		key & string & Key identifier or symbolic key label \\
+		keyCode & int & Numeric key code normalized for model input \\
+		dwellTime & float & Key hold duration in milliseconds \\
+		flightTime & float & Time gap between consecutive key events \\
+		action & string & Interaction type (type, delete, paste, copy, etc.) \\
+		lineNumber & int (opt.) & Source-code line index at event time \\
+		columnNumber & int (opt.) & Source-code column index at event time \\
+		\bottomrule
+	\end{tabular}
+	\end{singlespace}
+\end{table}
+
+\section*{A.2 Simplified Process Score Formulation}
+
+\begin{equation}
+\mathrm{Overall} = \frac{\mathrm{APS} + \mathrm{LD} + \mathrm{AS} + \mathrm{ENG}}{4}
+\end{equation}
+
+where:
+\begin{itemize}
+	\item $\mathrm{APS}$: Active Problem Solving score,
+	\item $\mathrm{LD}$: Learning Depth score,
+	\item $\mathrm{AS}$: Authenticity score,
+	\item $\mathrm{ENG}$: Engagement score.
+\end{itemize}
+
+These component scores are derived from transparent heuristics involving pauses, rewrite activity, deletion behavior, paste operations, and session duration.
+
+\section*{A.3 Interpretation Guidance}
+
+\begin{itemize}
+	\item \textbf{High authenticity with high struggle}: typically indicates genuine effort and learning in progress.
+	\item \textbf{Low authenticity with low edit activity}: requires manual review for possible external assistance.
+	\item \textbf{High cognitive load segments}: suitable for targeted pedagogical intervention.
+\end{itemize}
 
 \clearpage
