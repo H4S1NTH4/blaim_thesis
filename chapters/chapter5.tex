@@ -1,0 +1,56 @@
+%% ============================================================
+%%  chapters/chapter5.tex - Conclusion and Recommendations
+%% ============================================================
+\chapter{Conclusion and Recommendations}
+\label{chap:conclusion}
+
+\section{Conclusion}
+\label{sec:final-conclusion}
+
+This dissertation addressed the challenge of maintaining student identity assurance and learning-process visibility in online programming assessments. The research problem asked how keystroke data could be used to continuously authenticate student identity while also producing interpretable behaviour analysis for academic integrity and learning support.
+
+The implemented BLAIM module demonstrates a practical answer. It captures keystroke events from programming sessions, transforms them into biometric feature sequences, generates TypeNet-style embeddings, stores multi-phase student templates, verifies claimed identity, identifies likely users, monitors active sessions, archives completed work, and computes behaviour indicators from the same event stream. This integration is the central contribution of the work.
+
+The evaluation shows that the implementation is functional and supported by real-user evidence. The evidence pack contains 32 enrollment records, 31 test records, 32 biometric templates, 34 archives, 12 authentication timeline events, and 16 observed users. For labelled authentication testing, the system produced 14 true accepts, 6 true rejects, 3 false rejects, and 1 false accept at the 0.70 threshold. These results demonstrate practical feasibility and confirm the value of using keystroke biometrics as interpretable decision-support evidence.
+
+\section{Achievement of Objectives}
+\label{sec:objectives-achieved}
+
+The research objectives were achieved as follows:
+
+\begin{enumerate}
+  \item The literature review identified gaps in isolated keystroke authentication, programming trace analytics, remote proctoring, interpretability, deployability, and fairness.
+  \item The system architecture was designed around a shared keystroke event stream supporting authentication, behaviour analysis, monitoring, archiving, and dashboard consumption.
+  \item The module was implemented using FastAPI, PyTorch, PostgreSQL, Redis, Docker Compose, and a Next.js evaluator interface inside GradeLoop Core.
+  \item The implementation was evaluated using recorded enrollment and testing data, producing practical authentication metrics and system completeness evidence.
+  \item Ethical, social, security, operational, and commercialization considerations were identified for responsible deployment.
+\end{enumerate}
+
+\section{Recommendations}
+\label{sec:recommendations}
+
+For academic deployment, the following recommendations are made:
+
+\begin{itemize}
+  \item Use BLAIM as an evidence and triage tool, not as an automatic disciplinary decision-maker.
+  \item Require sufficient enrollment coverage before high-stakes use, preferably across baseline and transcription tasks at minimum.
+  \item Calibrate thresholds per course, task type, and student context rather than relying on one global value.
+  \item Persist full behavioural analysis during session finalization so that archived records include both authentication and process evidence.
+  \item Encrypt biometric templates and keystroke archives at rest in production.
+  \item Provide student-facing consent, transparency, retention, and appeal workflows.
+  \item Continue evaluation across different devices, keyboards, programming languages, accessibility conditions, and demographic groups.
+\end{itemize}
+
+\section{Future Work}
+\label{sec:future-work}
+
+Future work should focus on four directions. First, BLAIM should continue accumulating real-user data across semesters and course contexts to refine threshold calibration. Second, adaptive thresholding should be introduced so that each student can have calibrated risk bands based on their own enrollment variance and task condition. Third, the behaviour analysis component should be expanded with IDE telemetry such as compile attempts, test runs, cursor movement, and code-diff history. Fourth, fairness and accessibility evaluation should be treated as a core requirement before institution-wide use.
+
+Additional technical improvements include template encryption, anomaly explanation dashboards, per-phase template matching, model version tracking, automatic report generation, and LMS plugins for Moodle, Canvas, and Blackboard.
+
+\section{Final Remarks}
+\label{sec:final-remarks}
+
+Keystroke dynamics alone cannot solve academic integrity, and process analytics alone cannot prove authorship. The strength of BLAIM is that it combines both forms of evidence in one deployable system. It offers a more balanced direction for online programming assessment: less intrusive than webcam surveillance, richer than final-code plagiarism checks, and more useful to instructors than a single authentication score. With continued validation, fairness calibration, and production hardening, this approach can become a practical component of trustworthy digital assessment.
+
+\clearpage
