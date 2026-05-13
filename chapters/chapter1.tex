@@ -20,7 +20,7 @@ This dissertation focuses on this intersection. It presents BLAIM, a Behaviour L
 
 The literature and current educational technology practice reveal five important gaps.
 
-\textbf{First, authentication and learning analytics are usually separated.} Keystroke biometric systems often focus on accept/reject identity decisions, while learning analytics systems focus on student progress, struggle, and intervention. In online programming assessments, the same keystroke stream can support both purposes, but many systems duplicate collection pipelines or ignore one side of the evidence.
+\textbf{First, authentication and learning analytics are usually separated.} Keystroke biometric systems often focus on accept/reject identity decisions, while learning analytics systems focus on student progress, struggle, and intervention. Continuous authentication research has advanced substantially for free-text typing and online examination scenarios \cite{alshehri2018iterative,lu2020continuous,yang2021tkca,senarath2023reevaluating}, and programming education research has separately shown that coding keystrokes and IDE traces can reveal learning process information \cite{edwards2020keystroke,edwards2023csedm,leinonen2022ide}. However, the literature provides much less work on continuous identity monitoring specifically while students are writing source code. This separation is central to the novelty of BLAIM: in online programming assessments, the same keystroke stream can support both authorship assurance and process-aware learning analytics, but existing systems usually duplicate collection pipelines or ignore one side of the evidence.
 
 \textbf{Second, many authentication outputs are difficult for instructors to interpret.} A similarity score or risk score is useful for a system, but instructors need context: Was the session rejected because the rhythm changed, because too little data was available, because another user matched more closely, or because the process looked like bulk paste behaviour?
 
@@ -30,7 +30,7 @@ The literature and current educational technology practice reveal five important
 
 \textbf{Fifth, ethical and fairness concerns are not optional.} Keystroke data is biometric and behavioural data. It can be affected by keyboard device, motor ability, stress, injury, language familiarity, and accessibility tools. A responsible system must be positioned as decision support with consent, retention limits, human review, and calibration.
 
-The gap addressed in this work is therefore not simply ``build another keystroke classifier''. The research gap is the lack of an integrated, interpretable, deployable module that combines continuous keystroke identity monitoring with behaviour analysis for programming assessment workflows.
+The gap addressed in this work is therefore not simply ``build another keystroke classifier''. The research gap is the lack of an integrated, interpretable, deployable module that performs continuous keystroke identity monitoring during live coding and connects that identity evidence with behaviour analysis for programming assessment workflows.
 
 \section{Research Problem}
 \label{sec:research-problem}
@@ -67,7 +67,7 @@ The research objectives are:
 \section{Novelty and Contribution}
 \label{sec:novelty}
 
-The novelty of this research is the integration of two normally separate concerns: continuous identity assurance and process-aware behaviour analysis. The contribution is practical and applied: BLAIM does not only compute a biometric match. It also records how the typing session unfolded and presents evidence that can help instructors decide whether a case requires academic integrity review, formative support, or normal acceptance.
+The novelty of this research is the integration of two normally separate concerns: continuous identity assurance and process-aware behaviour analysis during source-code production. Existing keystroke-authentication studies show that users can be authenticated continuously from typing behaviour, but they are generally not designed around the distinctive structure of programming sessions. Existing programming-trace studies show that coding events can explain learning behaviour, but they usually do not provide biometric identity continuity. BLAIM occupies this underexplored intersection. The contribution is practical and applied: BLAIM does not only compute a biometric match. It also records how the coding session unfolded and presents evidence that can help instructors decide whether a case requires academic integrity review, formative support, or normal acceptance.
 
 The main contributions are:
 

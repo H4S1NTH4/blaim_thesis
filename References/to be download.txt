@@ -1,0 +1,24 @@
+Yes, you should download more references into blaim_thesis/References. Priority list:
+
+Alshehri, Coenen & Bollegala, 2018, Iterative Keystroke Continuous Authentication
+https://link.springer.com/article/10.1007/s13218-018-0526-z
+
+Lu et al., 2020, Continuous authentication by free-text keystroke based on CNN and RNN
+https://www.sciencedirect.com/science/article/pii/S0167404820301334
+
+Yang et al., 2021, TKCA: timely keystroke-based continuous user authentication
+https://link.springer.com/article/10.1186/s42400-021-00075-9
+
+Edwards, Leinonen & Hellas, 2020, A Study of Keystroke Data in Two Contexts
+https://doi.org/10.1145/3328778.3366863
+
+Edwards, Hart & Shrestha, 2023, Review of CSEDM Data and Introduction of Two Public CS1 Keystroke Datasets
+https://jedm.educationaldatamining.org/index.php/JEDM/article/view/581
+
+Leinonen & Hellas, 2022, IDE Action Log Dataset from a CS1 MOOC
+https://zenodo.org/records/6903968
+
+Optional but useful for novelty/background:
+
+Horvath, Pietrikova & Spinellis, 2026 preprint, Bridging Behavioral Biometrics and Source Code Stylometry
+https://papers.cool/arxiv/2603.11150

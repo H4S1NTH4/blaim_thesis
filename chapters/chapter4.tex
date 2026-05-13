@@ -44,17 +44,17 @@ Figure~\ref{fig:evaluation-flow} shows the evaluation workflow used to produce t
   \resizebox{\textwidth}{!}{%
   \begin{tikzpicture}[
     node distance=1.0cm and 1.1cm,
-    step/.style={draw, rounded corners, align=center, minimum width=2.7cm, minimum height=0.9cm, fill=gray!8},
+    flowstep/.style={draw, rounded corners, align=center, minimum width=2.7cm, minimum height=0.9cm, fill=gray!8},
     data/.style={draw, cylinder, shape border rotate=90, aspect=0.25, align=center, minimum width=2.4cm, minimum height=1.0cm, fill=blue!8},
     arrow/.style={-{Latex[length=2mm]}, thick}
   ]
-    \node[step] (enroll) {Real-user\\enrollment};
-    \node[step, right=of enroll] (template) {Template\\creation};
-    \node[step, right=of template] (test) {Genuine / impostor\\coding tests};
-    \node[step, right=of test] (verify) {Verify / identify\\monitor};
-    \node[step, below=1.0cm of verify] (finalize) {Finalize and\\archive};
+    \node[flowstep] (enroll) {Real-user\\enrollment};
+    \node[flowstep, right=of enroll] (template) {Template\\creation};
+    \node[flowstep, right=of template] (test) {Genuine / impostor\\coding tests};
+    \node[flowstep, right=of test] (verify) {Verify / identify\\monitor};
+    \node[flowstep, below=1.0cm of verify] (finalize) {Finalize and\\archive};
     \node[data, left=of finalize] (records) {Evaluator and\\keystroke DBs};
-    \node[step, left=of records] (metrics) {Metric snapshots\\and thesis evidence};
+    \node[flowstep, left=of records] (metrics) {Metric snapshots\\and thesis evidence};
 
     \draw[arrow] (enroll) -- (template);
     \draw[arrow] (template) -- (test);
