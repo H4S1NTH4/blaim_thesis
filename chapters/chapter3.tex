@@ -267,7 +267,11 @@ The risk score is the inverse of similarity. A low risk score indicates that the
 \section{Multi-Phase Enrollment Design}
 \label{sec:multi-phase-enrollment}
 
-BLAIM supports phase-based enrollment to reduce dependence on one typing condition. The implemented configuration includes baseline, transcription, stress, and cognitive phases, with baseline and transcription required in the evaluator setup. Table~\ref{tab:enrollment-phases} summarizes the intended purpose of each phase.
+BLAIM supports phase-based enrollment to reduce dependence on one narrow typing condition. This is necessary because keystroke data is a behavioural biometric rather than a fixed physical trait. The same student can type differently when calm, under time pressure, mentally overloaded, physically tired, unfamiliar with a keyboard, or actively debugging a difficult programming problem. Prior work shows that cognitive and physical stress, emotional state, input device, text length, and task context can measurably change keystroke timing and accuracy \cite{vizer2009stress,epp2011emotional,lee2014emotion,kang2015inputdevices,macdonald2026stress}. In programming specifically, keystroke patterns also change because the task alternates between transcription, planning, syntax recall, debugging, and correction \cite{edwards2020keystroke}.
+
+For this reason, BLAIM does not assume that one enrollment sample represents the whole student. A single calm baseline may produce a clean template, but it may reject the same genuine student during a stressful assessment. A single high-pressure sample may capture time-constrained behaviour, but it may not represent normal coding rhythm. Multi-phase enrollment creates a broader behavioural profile by collecting samples from different but educationally realistic states.
+
+The implemented configuration includes baseline, transcription, stress, and cognitive phases, with baseline and transcription required in the evaluator setup. Table~\ref{tab:enrollment-phases} summarizes the intended purpose of each phase.
 
 \begin{table}[H]
   \centering
@@ -286,6 +290,21 @@ BLAIM supports phase-based enrollment to reduce dependence on one typing conditi
   \end{tabularx}
   \end{singlespace}
 \end{table}
+
+The phases have distinct roles. The baseline phase captures the student's normal low-pressure rhythm. The transcription phase controls the content by asking the student to type a fixed code snippet, which helps separate motor typing rhythm from problem-solving difficulty. The stress phase introduces time pressure so that the system can observe how the student's rhythm shifts when tension is present. The cognitive phase captures behaviour during higher reasoning, where long pauses, slower bursts, and correction patterns may be genuine signs of thinking rather than suspicious behaviour.
+
+BLAIM handles situational variation in six ways:
+
+\begin{enumerate}
+  \item \textbf{Multiple templates by phase:} Enrollment records are stored with a phase label so that future matching can compare a session against a more relevant condition instead of only one global template.
+  \item \textbf{Template variance storage:} Enrollment stores both mean embedding data and template standard deviation. This allows the system to recognize that some students naturally have more variable typing than others.
+  \item \textbf{Minimum sample requirements:} The authenticator requires multiple valid sequences before creating a template, reducing the risk that one unusual typing burst becomes the student's identity profile.
+  \item \textbf{Rolling monitoring rather than one decision:} Continuous checks are evaluated over session windows, so a temporary pause, syntax struggle, or short stress spike does not automatically define the whole session.
+  \item \textbf{Context-aware behaviour metrics:} Pause count, long pauses, deletion rate, burst typing, paste count, rhythm consistency, and friction points are reported beside biometric similarity. This helps reviewers distinguish stress or cognitive load from possible impersonation.
+  \item \textbf{Human-in-the-loop interpretation:} BLAIM reports risk and evidence instead of issuing automatic penalties. Device changes, illness, accessibility needs, keyboard problems, stress, or time pressure should be considered during review.
+\end{enumerate}
+
+The design goal is therefore not to remove variation from keystroke data. Variation is expected. The goal is to measure it, preserve its context, and use it responsibly so that genuine situational changes do not become unfair authentication failures.
 
 \section{Behaviour Analysis Pipeline}
 \label{sec:behaviour-pipeline}
@@ -358,25 +377,28 @@ The evaluator database separately stores enrollment records, test records, metri
 
 Table~\ref{tab:api-design} lists the main API capabilities.
 
+The API surface is organized around the main lifecycle of a programming assessment session. Capture endpoints receive raw browser events, enrollment endpoints build phase-specific biometric templates, verification and identification endpoints compare live sessions against enrolled profiles, monitoring endpoints support repeated checks during an active session, and finalization endpoints preserve the completed evidence record. This structure keeps the keystroke service usable as a standalone microservice while still allowing the evaluator backend or a future LMS integration to call only the functions required for a particular workflow.
+
 \begin{table}[H]
   \centering
   \caption{Implemented API Capabilities}
   \label{tab:api-design}
   \begin{singlespace}
-  \begin{tabularx}{\textwidth}{@{}p{4.4cm}p{8.4cm}@{}}
+  \small
+  \begin{tabularx}{\textwidth}{@{}p{5.9cm}X@{}}
     \toprule
     \textbf{Endpoint} & \textbf{Purpose} \\
     \midrule
-    \texttt{/api/keystroke/capture} & Buffer keystroke events for an active session \\
-    \texttt{/api/keystroke/enroll/phase} & Enroll a user for a named phase \\
-    \texttt{/api/keystroke/enroll/progress/\{user\_id\}} & Retrieve multi-phase enrollment status \\
-    \texttt{/api/keystroke/verify} & Verify claimed identity using a threshold \\
-    \texttt{/api/keystroke/identify} & Return top matching enrolled users \\
-    \texttt{/api/keystroke/monitor} & Run continuous monitoring over buffered session data \\
-    \texttt{/api/keystroke/session/finalize} & Archive session data after submission \\
-    \texttt{/api/keystroke/timeline/\{session\_id\}} & Retrieve authentication timeline events \\
-    \texttt{/api/keystroke/analytics/\{session\_id\}} & Retrieve risk and behavioural analytics \\
-    \texttt{/ws/monitor/\{user\_id\}/\{session\_id\}} & Stream monitoring updates to dashboards \\
+    \path|/api/keystroke/capture| & Buffer keystroke events for an active session \\
+    \path|/api/keystroke/enroll/phase| & Enroll a user for a named phase \\
+    \path|/api/keystroke/enroll/progress/{user_id}| & Retrieve multi-phase enrollment status \\
+    \path|/api/keystroke/verify| & Verify claimed identity using a threshold \\
+    \path|/api/keystroke/identify| & Return top matching enrolled users \\
+    \path|/api/keystroke/monitor| & Run continuous monitoring over buffered session data \\
+    \path|/api/keystroke/session/finalize| & Archive session data after submission \\
+    \path|/api/keystroke/timeline/{session_id}| & Retrieve authentication timeline events \\
+    \path|/api/keystroke/analytics/{session_id}| & Retrieve risk and behavioural analytics \\
+    \path|/ws/monitor/{user_id}/{session_id}| & Stream monitoring updates to dashboards \\
     \bottomrule
   \end{tabularx}
   \end{singlespace}
@@ -439,6 +461,24 @@ The main evaluation metrics are:
 
 These metrics were selected because they are understandable to both technical evaluators and academic stakeholders. They also map directly to the risks of the educational domain: incorrectly challenging honest students and incorrectly accepting impostors.
 
+\subsection{Threshold Selection and Calibration}
+\label{subsec:threshold-calibration}
+
+The evaluation uses 0.70 as the default acceptance threshold for cosine similarity. This value was selected as a practical prototype threshold rather than a final institutional policy. In the current dataset, it provides a balanced starting point for observing both genuine and impostor outcomes while preserving enough borderline cases for analysis. A threshold that is too low would increase the risk of accepting impostor sessions, while a threshold that is too high would increase false rejection of genuine students whose rhythm changes because of stress, device differences, cognitive load, or task difficulty.
+
+For production deployment, BLAIM should not rely on a single fixed threshold for all students and all assessments. The intended calibration process is:
+
+\begin{enumerate}
+  \item collect baseline and transcription enrollment samples for each student;
+  \item compute each student's template mean and template variance;
+  \item evaluate genuine and impostor validation sessions under the planned assessment condition;
+  \item inspect false accept and false reject trade-offs at candidate thresholds;
+  \item select institution-level risk bands for low, medium, and high concern;
+  \item refine thresholds per phase or per student when enough historical data is available.
+\end{enumerate}
+
+This makes the 0.70 threshold an evaluation configuration for the prototype, while the long-term design supports adaptive calibration. The reviewer should therefore interpret the reported accuracy metrics as feasibility evidence, not as a final deployment guarantee.
+
 \subsection{Requirement Traceability}
 \label{subsec:requirement-traceability}
 
@@ -454,15 +494,15 @@ Table~\ref{tab:traceability} links key requirements to implementation artifacts 
     \toprule
     \textbf{ID} & \textbf{Requirement} & \textbf{Implementation artifact} & \textbf{Evaluation evidence} & \textbf{Status} \\
     \midrule
-    FR1 & Capture keystroke events & Next.js capture UI and \texttt{/api/keystroke/capture} & 31 test records with 105--421 events & Passed \\
-    FR2 & Multi-phase enrollment & \texttt{/api/keystroke/enroll/phase}, \texttt{enrollment\_progress} & 32 enrollment records, 15 progress rows & Passed \\
+    FR1 & Capture keystroke events & Next.js capture UI and \path|/api/keystroke/capture| & 31 test records with 105--421 events & Passed \\
+    FR2 & Multi-phase enrollment & \path|/api/keystroke/enroll/phase|, \path|enrollment_progress| & 32 enrollment records, 15 progress rows & Passed \\
     FR3 & Feature transformation & \texttt{create\_typenet\_sequence} feature extractor & 70 by 5 model input pipeline & Passed \\
-    FR4 & Biometric template storage & \texttt{user\_biometrics} table & 32 stored biometric templates & Passed \\
-    FR5 & Claimed-user verification & \texttt{/api/keystroke/verify} & 31 verification responses & Passed \\
-    FR6 & Top-K identification & \texttt{/api/keystroke/identify} & Identify responses stored in evaluator records & Passed \\
-    FR7 & Continuous monitoring & \texttt{/api/keystroke/monitor}, timeline view & 12 authentication timeline events & Passed \\
-    FR8 & Session archiving & \texttt{/api/keystroke/session/finalize} & 34 keystroke archives & Passed \\
-    FR9 & Behaviour analysis & \texttt{/api/keystroke/analyze}, analytics endpoint & Behaviour metrics engine implemented & Passed \\
+    FR4 & Biometric template storage & \path|user_biometrics| table & 32 stored biometric templates & Passed \\
+    FR5 & Claimed-user verification & \path|/api/keystroke/verify| & 31 verification responses & Passed \\
+    FR6 & Top-K identification & \path|/api/keystroke/identify| & Identify responses stored in evaluator records & Passed \\
+    FR7 & Continuous monitoring & \path|/api/keystroke/monitor|, timeline view & 12 authentication timeline events & Passed \\
+    FR8 & Session archiving & \path|/api/keystroke/session/finalize| & 34 keystroke archives & Passed \\
+    FR9 & Behaviour analysis & \path|/api/keystroke/analyze|, analytics endpoint & Behaviour metrics engine implemented & Passed \\
     FR10 & Research dashboard & Next.js research page, evaluator backend & 2 saved metric snapshots & Passed \\
     \bottomrule
   \end{tabularx}
@@ -476,6 +516,8 @@ BLAIM has commercialization potential as an academic integrity and learning anal
 
 Potential customer groups include universities, online degree providers, coding bootcamps, certification providers, and LMS vendors. A feasible commercialization model is software-as-a-service with institution-level licensing, plus an on-premise option for institutions with strict data governance policies.
 
+The product would be positioned as a specialist module for programming assessments rather than a general proctoring tool. This positioning is important because many existing academic-integrity products focus on identity checks, lockdown browsers, webcam monitoring, or final-submission similarity. BLAIM's commercial value is the process layer: it shows how code was produced while also maintaining continuous authorship confidence.
+
 The differentiators are:
 
 \begin{itemize}
@@ -486,7 +528,31 @@ The differentiators are:
   \item Configurable thresholds and retention policies for institutional governance.
 \end{itemize}
 
-Commercial readiness requires additional work: production encryption of biometric templates, fairness audits, administrator policy controls, consent workflows, and formal security testing.
+Commercial readiness requires additional work: production encryption of biometric templates, fairness audits, administrator policy controls, consent workflows, and formal security testing. The minimum viable product would package the keystroke service, evaluator dashboard, LMS integration adapter, policy configuration panel, and evidence export workflow. A pilot deployment could begin in a single programming module, then expand after threshold calibration, instructor training, and student consent processes are validated.
+
+Table~\ref{tab:commercial-positioning} compares BLAIM against common assessment-integrity approaches.
+
+\begin{table}[H]
+  \centering
+  \caption{Commercial Positioning Against Existing Integrity Approaches}
+  \label{tab:commercial-positioning}
+  \begin{singlespace}
+  \scriptsize
+  \begin{tabularx}{\textwidth}{@{}p{2.7cm}p{3.0cm}p{3.8cm}p{3.7cm}@{}}
+    \toprule
+    \textbf{Approach} & \textbf{Primary evidence} & \textbf{Limitation in coding assessments} & \textbf{BLAIM advantage} \\
+    \midrule
+    Webcam proctoring & Student and room observation & Intrusive and weak at explaining how code was produced & Less visually intrusive; captures authorship process inside the coding interface \\
+    Lockdown browser & Environment restriction & Cannot prove who typed after login or how code evolved & Adds continuous identity and session-process evidence \\
+    Code similarity checking & Final submitted code & Misses private, generated, rewritten, or heavily modified sources & Shows whether code appeared through natural typing, debugging, or paste-like activity \\
+    Login authentication & Initial identity check & Does not detect mid-session typist changes & Performs repeated verification and monitoring during the session \\
+    Learning analytics only & Process and engagement traces & Usually lacks biometric identity continuity & Combines learning-process indicators with identity confidence \\
+    \bottomrule
+  \end{tabularx}
+  \end{singlespace}
+\end{table}
+
+The proposed revenue model has two tiers. A SaaS tier would suit institutions that want low operational overhead and automatic updates. An institution-hosted tier would suit universities with strict privacy, data residency, or biometric governance requirements. Commercial adoption should include implementation services for LMS integration, threshold calibration, staff training, and policy configuration.
 
 Table~\ref{tab:commercialization-evidence} summarizes the commercialization evidence.
 

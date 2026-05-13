@@ -22,3 +22,20 @@ Optional but useful for novelty/background:
 
 Horvath, Pietrikova & Spinellis, 2026 preprint, Bridging Behavioral Biometrics and Source Code Stylometry
 https://papers.cool/arxiv/2603.11150
+
+Additional references for multi-phase enrollment, stress, cognitive load, and situational variability:
+
+Vizer, Zhou & Sears, 2009, Automated stress detection using keystroke and linguistic features
+https://doi.org/10.1016/j.ijhcs.2009.07.005
+
+Epp, Lippold & Mandryk, 2011, Identifying emotional states using keystroke dynamics
+https://doi.org/10.1145/1978942.1979046
+
+Lee, Tsui & Hsiao, 2014, The influence of emotion on keyboard typing
+https://doi.org/10.1186/1475-925X-13-81
+
+Kang & Cho, 2015, Keystroke dynamics-based user authentication using long and free text strings from various input devices
+https://doi.org/10.1016/j.ins.2014.08.070
+
+Mac Donald, Drevin & Kruger, 2026, Biometric Authentication: Stress as a Factor in Keystroke Dynamics
+https://doi.org/10.1007/978-3-032-09660-9_6

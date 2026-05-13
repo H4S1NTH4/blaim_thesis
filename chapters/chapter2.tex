@@ -25,6 +25,15 @@ Keystroke research commonly separates features into timing, sequence, and error-
 
 Deep learning studies such as Altwaijry's keystroke authentication work and Li et al.'s multi-stream convolutional approach show the broader movement from manually selected statistics toward learned representations \cite{altwaijry2020deep,li2020keystroke}. However, learned representations still require careful interpretation in education. A classifier may separate users, but an instructor also needs to understand whether the session shows normal problem solving, struggle, or suspicious process behaviour.
 
+\subsection{Situational Variability in Keystroke Data}
+\label{subsec:situational-variability}
+
+Keystroke dynamics is useful because typing rhythm contains stable personal structure, but it is not fixed in the same way as a physical biometric. A student's timing pattern can shift when the assessment situation changes. Stress, time pressure, fatigue, injury, keyboard familiarity, device type, language familiarity, emotional state, and cognitive load can all influence dwell time, flight time, error correction, pause length, and rhythm consistency.
+
+Several studies support this concern. Vizer et al. showed that cognitive and physical stress can be detected from keystroke and linguistic features, which means stress can measurably change normal typing behaviour \cite{vizer2009stress}. Epp et al. demonstrated that emotional states such as nervousness, confidence, relaxation, sadness, tiredness, anger, and excitement can be inferred from keystroke dynamics \cite{epp2011emotional}. Lee et al. further examined emotion-induced variation in keystroke duration, latency, and typing accuracy \cite{lee2014emotion}. Kang and Cho showed that authentication performance depends on input device and text length, with different performance across PC keyboard, soft keyboard, and touch keyboard contexts \cite{kang2015inputdevices}. More recent work by Mac Donald et al. explicitly studied stress as a factor in keystroke dynamics and reported that time constraint, physical limitation, and knowledge constraint can alter typing patterns compared with a normal baseline \cite{macdonald2026stress}.
+
+This variability is especially important for programming assessments. Coding is not simple transcription. A student may pause to reason about an algorithm, hesitate when syntax is unfamiliar, speed up when copying a known pattern, slow down under time pressure, or delete repeatedly while debugging. Edwards et al. show that keystroke data behaves differently across written-language and programming-language contexts \cite{edwards2020keystroke}. Therefore, BLAIM treats keystroke rhythm as probabilistic evidence rather than a single fixed signature. The system must model normal variation, preserve the context of the session, and avoid treating every rhythm shift as misconduct.
+
 \section{Continuous Authentication}
 \label{sec:lit-continuous-auth}
 

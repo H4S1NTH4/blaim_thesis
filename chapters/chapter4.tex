@@ -138,6 +138,8 @@ The derived metrics are shown in Table~\ref{tab:auth-metrics}.
   \end{singlespace}
 \end{table}
 
+The 0.70 threshold should be interpreted as a prototype evaluation threshold. It is useful because it creates a measurable trade-off between accepting genuine sessions and rejecting impostor sessions in the available dataset. The observed false rejects and false accept show why BLAIM should support calibration rather than a fixed universal policy. In a real deployment, threshold selection should use historical enrollment variance, phase-specific templates, assessment conditions, and institutional tolerance for false acceptance versus false rejection.
+
 Figure~\ref{fig:metrics-chart} visualizes the authentication outcome distribution.
 
 \begin{figure}[H]

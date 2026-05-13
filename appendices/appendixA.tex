@@ -22,19 +22,20 @@ This evidence pack contains enrollment records, biometric template summaries, en
   \centering
   \caption{BLAIM Service Endpoint Summary}
   \begin{singlespace}
-  \begin{tabularx}{\textwidth}{@{}p{4.5cm}p{8.2cm}@{}}
+  \small
+  \begin{tabularx}{\textwidth}{@{}p{5.7cm}X@{}}
     \toprule
     \textbf{Endpoint} & \textbf{Description} \\
     \midrule
-    \texttt{/health} & Service and infrastructure health \\
-    \texttt{/api/keystroke/capture} & Capture active session keystroke batches \\
-    \texttt{/api/keystroke/enroll/phase} & Store phase-based biometric enrollment \\
-    \texttt{/api/keystroke/verify} & Verify a claimed student identity \\
-    \texttt{/api/keystroke/identify} & Return top matching enrolled users \\
-    \texttt{/api/keystroke/monitor} & Perform continuous authentication over buffered data \\
-    \texttt{/api/keystroke/session/finalize} & Archive completed session evidence \\
-    \texttt{/api/keystroke/analytics/\{session\_id\}} & Retrieve timeline and behavioural analytics \\
-    \texttt{/ws/monitor/\{user\_id\}/\{session\_id\}} & Stream monitoring updates \\
+    \path|/health| & Service and infrastructure health \\
+    \path|/api/keystroke/capture| & Capture active session keystroke batches \\
+    \path|/api/keystroke/enroll/phase| & Store phase-based biometric enrollment \\
+    \path|/api/keystroke/verify| & Verify a claimed student identity \\
+    \path|/api/keystroke/identify| & Return top matching enrolled users \\
+    \path|/api/keystroke/monitor| & Perform continuous authentication over buffered data \\
+    \path|/api/keystroke/session/finalize| & Archive completed session evidence \\
+    \path|/api/keystroke/analytics/{session_id}| & Retrieve timeline and behavioural analytics \\
+    \path|/ws/monitor/{user_id}/{session_id}| & Stream monitoring updates \\
     \bottomrule
   \end{tabularx}
   \end{singlespace}
